@@ -1,0 +1,115 @@
+
+import { supabase } from "@/integrations/supabase/client";
+import { Beneficiary, Allocation, FraudAlert } from "@/types/database";
+
+export const registerBeneficiary = async (beneficiary: Partial<Beneficiary>): Promise<Beneficiary> => {
+  const { data, error } = await supabase
+    .from("beneficiaries")
+    .insert([beneficiary])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error registering beneficiary:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const fetchBeneficiariesByRegion = async (regionId: string): Promise<Beneficiary[]> => {
+  const { data, error } = await supabase
+    .from("beneficiaries")
+    .select("*")
+    .eq("region_id", regionId);
+
+  if (error) {
+    console.error("Error fetching beneficiaries:", error);
+    throw new Error(error.message);
+  }
+
+  return data || [];
+};
+
+export const fetchBeneficiaryById = async (id: string): Promise<Beneficiary> => {
+  const { data, error } = await supabase
+    .from("beneficiaries")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error("Error fetching beneficiary:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const fetchRegionalGoods = async (regionId: string): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from("regional_goods")
+    .select(`
+      *,
+      goods_types:goods_type_id (name, description)
+    `)
+    .eq("region_id", regionId);
+
+  if (error) {
+    console.error("Error fetching regional goods:", error);
+    throw new Error(error.message);
+  }
+
+  return data || [];
+};
+
+export const checkRecentAllocation = async (beneficiaryId: string, timeWindowMinutes = 5): Promise<boolean> => {
+  // Calculate time threshold (now - X minutes)
+  const threshold = new Date();
+  threshold.setMinutes(threshold.getMinutes() - timeWindowMinutes);
+  
+  const { data, error } = await supabase
+    .from("allocations")
+    .select("id")
+    .eq("beneficiary_id", beneficiaryId)
+    .gt("allocated_at", threshold.toISOString())
+    .limit(1);
+
+  if (error) {
+    console.error("Error checking recent allocations:", error);
+    throw new Error(error.message);
+  }
+
+  // If data exists and has length > 0, there was a recent allocation
+  return data && data.length > 0;
+};
+
+export const createAllocation = async (allocation: Partial<Allocation>): Promise<Allocation> => {
+  const { data, error } = await supabase
+    .from("allocations")
+    .insert([allocation])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating allocation:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const createFraudAlert = async (alert: Partial<FraudAlert>): Promise<FraudAlert> => {
+  const { data, error } = await supabase
+    .from("fraud_alerts")
+    .insert([alert])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating fraud alert:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};

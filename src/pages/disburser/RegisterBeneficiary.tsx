@@ -1,253 +1,169 @@
 
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
-import { User, UserPlus, Camera } from "lucide-react";
-import { useUserInfo } from "@/hooks/useUserInfo";
-
-const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  estimatedAge: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-    message: "Age must be a positive number",
-  }),
-  height: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-    message: "Height must be a positive number (in cm)",
-  }),
-  uniqueIdentifiers: z.string().min(10, "Please provide detailed unique identifiers"),
-});
-
-type BeneficiaryFormValues = z.infer<typeof formSchema>;
+import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { registerBeneficiary } from "@/services/disburserService";
+import { Beneficiary } from "@/types/database";
 
 const RegisterBeneficiary = () => {
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const { user } = useUserInfo();
-  const { toast } = useToast();
-
-  const form = useForm<BeneficiaryFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      estimatedAge: "",
-      height: "",
-      uniqueIdentifiers: "",
-    },
+  const { userInfo } = useAuth();
+  const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState({
+    name: "",
+    height: "",
+    estimatedAge: "",
+    uniqueFeatures: "",
   });
-
-  const onSubmit = async (data: BeneficiaryFormValues) => {
-    setIsRegistering(true);
-    
-    try {
-      // Simulate API call with timeout
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      
-      // In a real app, this would send data to the database
-      console.log("Registered beneficiary:", {
-        ...data,
-        disburserRegion: user?.region,
-        registeredBy: user?.name,
-        registeredAt: new Date().toISOString(),
-        height: Number(data.height),
-        estimatedAge: Number(data.estimatedAge),
-      });
-      
-      // Show success message
-      setShowSuccess(true);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const registerMutation = useMutation({
+    mutationFn: (data: Partial<Beneficiary>) => registerBeneficiary(data),
+    onSuccess: () => {
       toast({
-        title: "Beneficiary Registered",
-        description: `${data.name} has been successfully registered in the system.`,
-        variant: "default",
+        title: "Success",
+        description: "Beneficiary registered successfully",
       });
-      
-      // Reset form
-      form.reset();
-    } catch (error) {
-      console.error("Registration error:", error);
+      setFormData({
+        name: "",
+        height: "",
+        estimatedAge: "",
+        uniqueFeatures: "",
+      });
+    },
+    onError: (error) => {
       toast({
-        title: "Registration Failed",
-        description: "There was an error registering the beneficiary. Please try again.",
+        title: "Error",
+        description: `Error registering beneficiary: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
-    } finally {
-      setIsRegistering(false);
+    },
+  });
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name) {
+      toast({
+        title: "Error",
+        description: "Name is required",
+        variant: "destructive",
+      });
+      return;
     }
+    
+    // Create unique identifiers object
+    const uniqueIdentifiers = {
+      features: formData.uniqueFeatures,
+      registrationDate: new Date().toISOString(),
+    };
+    
+    const beneficiaryData: Partial<Beneficiary> = {
+      name: formData.name,
+      height: formData.height ? parseFloat(formData.height) : undefined,
+      estimated_age: formData.estimatedAge ? parseInt(formData.estimatedAge, 10) : undefined,
+      unique_identifiers: uniqueIdentifiers,
+      registered_by: userInfo?.id,
+      region_id: userInfo?.region,
+    };
+    
+    registerMutation.mutate(beneficiaryData);
   };
-
+  
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-gray-800">Register Beneficiary</h2>
-        <p className="text-gray-600">Add new beneficiaries to the secure aid system</p>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" /> New Beneficiary
-            </CardTitle>
-            <CardDescription>
-              Enter the beneficiary's details accurately for proper identification
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Full name of beneficiary" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+    <div className="max-w-3xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>Register New Beneficiary</CardTitle>
+          <CardDescription>
+            Enter the beneficiary's details to register them in the system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="Enter beneficiary's full name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="height">Height (cm)</Label>
+                <Input
+                  id="height"
+                  name="height"
+                  type="number"
+                  step="0.1"
+                  placeholder="Enter height in cm"
+                  value={formData.height}
+                  onChange={handleChange}
                 />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="estimatedAge"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Estimated Age</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="Years" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="height"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Height (cm)</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="Height in cm" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="uniqueIdentifiers"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unique Identifiers</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Describe any unique physical characteristics, scars, marks, etc." 
-                          {...field} 
-                          rows={4}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Include any distinguishing features that will help with positive identification
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="bg-blue-50 p-3 rounded-md">
-                  <p className="text-sm text-blue-800">
-                    <span className="font-medium">Registration Location:</span>{" "}
-                    {user?.region || "Unknown Region"}
-                  </p>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-secure-DEFAULT hover:bg-secure-dark"
-                  disabled={isRegistering}
-                >
-                  {isRegistering ? "Registering..." : "Register Beneficiary"}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        {showSuccess ? (
-          <Card className="bg-green-50 border-green-100">
-            <CardHeader>
-              <CardTitle className="text-green-700">Registration Complete</CardTitle>
-              <CardDescription>
-                The beneficiary has been successfully registered in the system
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-6 space-y-4">
-                <div className="bg-green-100 p-3 rounded-full">
-                  <User className="h-12 w-12 text-green-600" />
-                </div>
-                <p className="font-medium text-center">
-                  Beneficiary information has been securely stored
-                </p>
-                <p className="text-sm text-gray-600 text-center">
-                  The beneficiary is now eligible for aid distribution
-                </p>
               </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                className="w-full bg-secure-light"
-                onClick={() => setShowSuccess(false)}
+              
+              <div className="space-y-2">
+                <Label htmlFor="estimatedAge">Estimated Age</Label>
+                <Input
+                  id="estimatedAge"
+                  name="estimatedAge"
+                  type="number"
+                  placeholder="Enter estimated age"
+                  value={formData.estimatedAge}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="uniqueFeatures">Unique Identifiers</Label>
+              <Textarea
+                id="uniqueFeatures"
+                name="uniqueFeatures"
+                placeholder="Enter any distinguishing features, marks, or other identification information"
+                rows={4}
+                value={formData.uniqueFeatures}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-gray-500">
+                Include any notable features that can help identify this person (scars, birthmarks, etc.)
+              </p>
+            </div>
+            
+            <div className="flex justify-end space-x-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate("/dashboard")}
               >
-                Register Another Beneficiary
+                Cancel
               </Button>
-            </CardFooter>
-          </Card>
-        ) : (
-          <Card className="border border-dashed flex flex-col items-center justify-center bg-gray-50">
-            <div className="py-8 flex flex-col items-center space-y-4">
-              <div className="bg-gray-100 p-3 rounded-full">
-                <Camera className="h-12 w-12 text-gray-400" />
-              </div>
-              <div className="text-center px-8">
-                <h3 className="font-medium text-gray-700 mb-1">Photo Identification</h3>
-                <p className="text-sm text-gray-500">
-                  In a production version, you would be able to capture a photo of the beneficiary for more accurate identification.
-                </p>
-              </div>
-              <Button variant="outline" disabled className="mt-2">
-                Take Photo (Coming Soon)
+              <Button
+                type="submit"
+                disabled={registerMutation.isPending}
+              >
+                {registerMutation.isPending ? "Registering..." : "Register Beneficiary"}
               </Button>
             </div>
-          </Card>
-        )}
-      </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
