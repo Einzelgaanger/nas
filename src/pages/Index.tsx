@@ -1,14 +1,20 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+  const { isAuthenticated, role } = useAuth();
+  
+  // If user is authenticated, redirect to appropriate dashboard
+  if (isAuthenticated) {
+    if (role === "admin") {
+      return <Navigate to="/dashboard" replace />;
+    } else if (role === "disburser") {
+      return <Navigate to="/disburser/register" replace />;
+    }
+  }
+  
+  // Otherwise, redirect to login
+  return <Navigate to="/" replace />;
 };
 
 export default Index;
