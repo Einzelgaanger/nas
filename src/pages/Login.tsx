@@ -28,7 +28,7 @@ const Login = () => {
         // Admin login
         const { data: admins, error } = await supabase
           .from("admins")
-          .select("*")
+          .select()
           .eq("username", identifier)
           .eq("password", password)
           .single();
@@ -39,8 +39,12 @@ const Login = () => {
 
         if (admins) {
           // Login successful
-          login("admin", { name: admins.name, id: admins.id });
-          navigate("/dashboard");
+          login("admin", { 
+            name: admins.name, 
+            id: admins.id 
+          });
+          
+          navigate("/admin");
           toast({
             title: "Login Successful",
             description: `Welcome, ${admins.name}`,
@@ -50,7 +54,7 @@ const Login = () => {
         // Disburser login
         const { data: disbursers, error } = await supabase
           .from("disbursers")
-          .select("*")
+          .select()
           .eq("phone_number", identifier)
           .eq("password", password)
           .single();
@@ -67,7 +71,8 @@ const Login = () => {
             phone: disbursers.phone_number,
             region: disbursers.region_id
           });
-          navigate("/dashboard");
+          
+          navigate("/disburser/register");
           toast({
             title: "Login Successful",
             description: `Welcome, ${disbursers.name}`,

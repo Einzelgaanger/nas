@@ -1,4 +1,9 @@
 
+import { Database as SupabaseDatabase } from "@/integrations/supabase/types";
+
+export type Tables<T extends keyof SupabaseDatabase["public"]["Tables"]> = 
+  SupabaseDatabase["public"]["Tables"][T]["Row"];
+
 export interface Admin {
   id: string;
   username: string;
@@ -21,6 +26,7 @@ export interface Disburser {
   region_id: string;
   created_at: string;
   updated_at: string;
+  regions?: { name: string };
 }
 
 export interface Beneficiary {

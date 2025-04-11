@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Disburser, Region } from "@/types/database";
+import { Database } from "@/integrations/supabase/types";
 
 export const fetchDisbursers = async (): Promise<Disburser[]> => {
   const { data, error } = await supabase

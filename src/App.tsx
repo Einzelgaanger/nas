@@ -38,6 +38,7 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 
                 {/* Admin Routes */}
+                <Route path="/admin" element={<Navigate to="/admin/disbursers" replace />} />
                 <Route path="/admin/disbursers" element={<ManageDisbursers />} />
                 <Route path="/admin/beneficiaries" element={<Dashboard />} /> {/* Placeholder */}
                 <Route path="/admin/resources" element={<Dashboard />} /> {/* Placeholder */}
@@ -45,6 +46,8 @@ const App = () => (
                 <Route path="/admin/alerts" element={<Dashboard />} /> {/* Placeholder */}
                 
                 {/* Disburser Routes */}
+                <Route index element={<Navigate to="/disburser/register" replace />} />
+                <Route path="/disburser" element={<Navigate to="/disburser/register" replace />} />
                 <Route path="/disburser/register" element={<RegisterBeneficiary />} />
                 <Route path="/disburser/allocate" element={<AllocateResources />} />
               </Route>
