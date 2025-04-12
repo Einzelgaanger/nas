@@ -28,12 +28,12 @@ export const AnimatedIcons: React.FC<AnimatedIconProps> = ({ className }) => {
   const [animationEnabled, setAnimationEnabled] = useState(true);
   const [performanceMode, setPerformanceMode] = useState(false);
 
-  // Detect low-end devices
+  // Detect low-end devices using a simplified approach
   useEffect(() => {
     const checkPerformance = () => {
-      // Simple heuristic: if device has memory under 4GB, likely a low-end device
-      const memoryLimit = 4;
-      if (navigator.deviceMemory && navigator.deviceMemory < memoryLimit) {
+      // Check if it's a mobile device with a small screen as a simple heuristic
+      // for performance mode (instead of using navigator.deviceMemory)
+      if (isMobile && windowWidth < 640) {
         setPerformanceMode(true);
       }
     };
@@ -43,7 +43,7 @@ export const AnimatedIcons: React.FC<AnimatedIconProps> = ({ className }) => {
     } catch (e) {
       console.log("Cannot detect device performance", e);
     }
-  }, []);
+  }, [isMobile, windowWidth]);
 
   // Reduce number of icons on mobile
   const iconCount = isMobile ? 6 : performanceMode ? 8 : 15;

@@ -3,8 +3,15 @@ import * as React from "react";
 
 const MOBILE_BREAKPOINT = 768;
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
+interface MobileInfo {
+  isMobile: boolean;
+  windowWidth: number;
+  isTablet: boolean;
+  isDesktop: boolean;
+}
+
+export function useIsMobile(): MobileInfo {
+  const [isMobile, setIsMobile] = React.useState<boolean>(false);
   const [windowWidth, setWindowWidth] = React.useState<number>(
     typeof window !== "undefined" ? window.innerWidth : 0
   );
@@ -28,7 +35,7 @@ export function useIsMobile() {
   }, []);
 
   return {
-    isMobile: !!isMobile,
+    isMobile,
     windowWidth,
     isTablet: windowWidth >= MOBILE_BREAKPOINT && windowWidth < 1024,
     isDesktop: windowWidth >= 1024,
