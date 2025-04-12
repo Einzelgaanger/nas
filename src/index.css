@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,20 +36,20 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Vibrant color palette */
+    --vibrant-blue: 210 100% 50%;
+    --vibrant-green: 142 76% 36%;
+    --vibrant-yellow: 48 100% 50%;
+    --vibrant-red: 0 84% 60%;
+    --vibrant-purple: 270 76% 53%;
   }
 
   .dark {
@@ -79,6 +80,7 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -97,5 +99,189 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
   }
+}
+
+/* Animation keyframes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Utility animation classes */
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+.rotate {
+  animation: rotate 10s linear infinite;
+}
+
+/* Enhanced component styles */
+.vibrant-card {
+  @apply bg-white rounded-xl shadow-lg border-2 border-blue-400 relative overflow-hidden;
+  transition: all 0.3s ease;
+}
+
+.vibrant-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.vibrant-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, hsl(var(--vibrant-blue)), hsl(var(--vibrant-purple)));
+}
+
+.floating-icon {
+  @apply absolute pointer-events-none opacity-50;
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 640px) {
+  .mobile-menu {
+    @apply fixed bottom-0 left-0 right-0 z-50 bg-white border-t flex justify-around py-3 px-2;
+  }
+  
+  .mobile-menu-item {
+    @apply flex flex-col items-center justify-center text-xs;
+  }
+  
+  /* Make cards full width on mobile */
+  .mobile-full-width {
+    @apply w-full !important;
+  }
+  
+  /* Adjust margins for better mobile experience */
+  .mobile-spacing {
+    @apply mx-2 my-2 !important;
+  }
+  
+  /* Improve form inputs on mobile */
+  input, select, textarea {
+    @apply text-base py-3 px-4 !important;
+  }
+  
+  /* Larger touch targets for mobile */
+  button {
+    @apply min-h-12 py-3 !important;
+  }
+}
+
+/* Vibrant background gradients */
+.bg-gradient-blue-purple {
+  background: linear-gradient(135deg, hsl(var(--vibrant-blue)) 0%, hsl(var(--vibrant-purple)) 100%);
+}
+
+.bg-gradient-green-blue {
+  background: linear-gradient(135deg, hsl(var(--vibrant-green)) 0%, hsl(var(--vibrant-blue)) 100%);
+}
+
+.bg-gradient-yellow-red {
+  background: linear-gradient(135deg, hsl(var(--vibrant-yellow)) 0%, hsl(var(--vibrant-red)) 100%);
+}
+
+/* Animation helper classes */
+.animation-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-300 {
+  animation-delay: 0.3s;
+}
+
+/* Improved button animations */
+.btn-vibrant {
+  @apply relative overflow-hidden transition-all duration-300;
+  transform-style: preserve-3d;
+}
+
+.btn-vibrant:hover {
+  @apply shadow-lg;
+  transform: translateY(-2px);
+}
+
+.btn-vibrant::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: rgba(255,255,255,0.2);
+  transition: width 0.3s ease;
+  z-index: -1;
+}
+
+.btn-vibrant:hover::after {
+  width: 100%;
 }

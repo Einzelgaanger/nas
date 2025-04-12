@@ -1,167 +1,166 @@
-
-import React, { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { registerBeneficiary } from "@/services/disburserService";
+import { createBeneficiary, fetchBeneficiaries as getBeneficiaries } from "@/services/disburserService";
 import { Beneficiary } from "@/types/database";
+import { List } from 'lucide-react';
 
 const RegisterBeneficiary = () => {
-  const { userInfo } = useAuth();
-  const navigate = useNavigate();
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    height: "",
-    estimatedAge: "",
-    uniqueFeatures: "",
-  });
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-  
-  const registerMutation = useMutation({
-    mutationFn: (data: Partial<Beneficiary>) => registerBeneficiary(data),
-    onSuccess: () => {
+  const [beneficiaryName, setBeneficiaryName] = useState("");
+  const [age, setAge] = useState<number | undefined>(undefined);
+  const [height, setHeight] = useState<number | undefined>(undefined);
+  const [uniqueIdentifiers, setUniqueIdentifiers] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+
+  const fetchBeneficiaries = async () => {
+    try {
+      const fetchedBeneficiaries = await getBeneficiaries();
+      setBeneficiaries(fetchedBeneficiaries);
+    } catch (error) {
+      console.error("Error fetching beneficiaries:", error);
       toast({
-        title: "Success",
-        description: "Beneficiary registered successfully",
-      });
-      setFormData({
-        name: "",
-        height: "",
-        estimatedAge: "",
-        uniqueFeatures: "",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Error registering beneficiary: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: "Failed to Fetch Beneficiaries",
+        description: error instanceof Error ? error.message : "Failed to retrieve beneficiaries.",
         variant: "destructive",
       });
-    },
-  });
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name) {
-      toast({
-        title: "Error",
-        description: "Name is required",
-        variant: "destructive",
-      });
-      return;
     }
-    
-    // Create unique identifiers object
-    const uniqueIdentifiers = {
-      features: formData.uniqueFeatures,
-      registrationDate: new Date().toISOString(),
-    };
-    
-    const beneficiaryData: Partial<Beneficiary> = {
-      name: formData.name,
-      height: formData.height ? parseFloat(formData.height) : undefined,
-      estimated_age: formData.estimatedAge ? parseInt(formData.estimatedAge, 10) : undefined,
-      unique_identifiers: uniqueIdentifiers,
-      registered_by: userInfo?.id,
-      region_id: userInfo?.region,
-    };
-    
-    registerMutation.mutate(beneficiaryData);
   };
-  
+
+  useEffect(() => {
+    fetchBeneficiaries();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Create the beneficiary with required fields
+      const newBeneficiary = {
+        name: beneficiaryName, // Ensure name is provided
+        unique_identifiers: JSON.stringify(uniqueIdentifiers),
+        region_id: user?.region || '',
+        registered_by: user?.id || '',
+        height: height || undefined,
+        estimated_age: age || undefined
+      };
+      
+      await createBeneficiary(newBeneficiary);
+      
+      toast({
+        title: "Registration Successful",
+        description: `Beneficiary ${beneficiaryName} has been registered successfully.`,
+      });
+      
+      // Reset form
+      setBeneficiaryName("");
+      setAge(undefined);
+      setHeight(undefined);
+      setUniqueIdentifiers([]);
+      
+      // Refresh beneficiary list
+      fetchBeneficiaries();
+    } catch (error) {
+      console.error("Error registering beneficiary:", error);
+      toast({
+        title: "Registration Failed",
+        description: error instanceof Error ? error.message : "An error occurred during registration.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="max-w-3xl mx-auto">
-      <Card>
+    <div className="flex flex-col md:flex-row h-full p-4 gap-4">
+      {/* Registration Form */}
+      <Card className="w-full md:w-1/2 bg-white shadow-md rounded-md p-4">
         <CardHeader>
-          <CardTitle>Register New Beneficiary</CardTitle>
-          <CardDescription>
-            Enter the beneficiary's details to register them in the system
-          </CardDescription>
+          <CardTitle className="text-lg font-semibold">Register Beneficiary</CardTitle>
+          <CardDescription>Fill in the details to register a new beneficiary.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="beneficiaryName">Beneficiary Name</Label>
               <Input
-                id="name"
-                name="name"
-                placeholder="Enter beneficiary's full name"
-                value={formData.name}
-                onChange={handleChange}
+                type="text"
+                id="beneficiaryName"
+                placeholder="Enter beneficiary name"
+                value={beneficiaryName}
+                onChange={(e) => setBeneficiaryName(e.target.value)}
                 required
               />
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="height">Height (cm)</Label>
-                <Input
-                  id="height"
-                  name="height"
-                  type="number"
-                  step="0.1"
-                  placeholder="Enter height in cm"
-                  value={formData.height}
-                  onChange={handleChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="estimatedAge">Estimated Age</Label>
-                <Input
-                  id="estimatedAge"
-                  name="estimatedAge"
-                  type="number"
-                  placeholder="Enter estimated age"
-                  value={formData.estimatedAge}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="uniqueFeatures">Unique Identifiers</Label>
-              <Textarea
-                id="uniqueFeatures"
-                name="uniqueFeatures"
-                placeholder="Enter any distinguishing features, marks, or other identification information"
-                rows={4}
-                value={formData.uniqueFeatures}
-                onChange={handleChange}
+            <div>
+              <Label htmlFor="age">Age (Estimated)</Label>
+              <Input
+                type="number"
+                id="age"
+                placeholder="Enter estimated age"
+                value={age || ""}
+                onChange={(e) => setAge(e.target.value ? parseInt(e.target.value, 10) : undefined)}
               />
-              <p className="text-xs text-gray-500">
-                Include any notable features that can help identify this person (scars, birthmarks, etc.)
-              </p>
             </div>
-            
-            <div className="flex justify-end space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/dashboard")}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={registerMutation.isPending}
-              >
-                {registerMutation.isPending ? "Registering..." : "Register Beneficiary"}
-              </Button>
+            <div>
+              <Label htmlFor="height">Height (cm)</Label>
+              <Input
+                type="number"
+                id="height"
+                placeholder="Enter height in cm"
+                value={height || ""}
+                onChange={(e) => setHeight(e.target.value ? parseInt(e.target.value, 10) : undefined)}
+              />
             </div>
+            <div>
+              <Label htmlFor="uniqueIdentifiers">Unique Identifiers (e.g., ID, Passport)</Label>
+              <Input
+                type="text"
+                id="uniqueIdentifiers"
+                placeholder="Enter unique identifiers, comma separated"
+                value={uniqueIdentifiers.join(", ")}
+                onChange={(e) => setUniqueIdentifiers(e.target.value.split(",").map((item) => item.trim()))}
+              />
+            </div>
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? "Registering..." : "Register"}
+            </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Beneficiary List */}
+      <Card className="w-full md:w-1/2 bg-gray-50 shadow-md rounded-md p-4">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <List size={20} className="mr-1" />
+            Registered Beneficiaries
+          </CardTitle>
+          <CardDescription>List of all registered beneficiaries.</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-auto">
+          {beneficiaries.length > 0 ? (
+            <ul className="divide-y divide-gray-200">
+              {beneficiaries.map((beneficiary) => (
+                <li key={beneficiary.id} className="py-2">
+                  <p className="text-sm font-medium text-gray-800">{beneficiary.name}</p>
+                  <p className="text-xs text-gray-500">
+                    ID: {beneficiary.id}, Registered on: {new Date(beneficiary.created_at).toLocaleDateString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">No beneficiaries registered yet.</p>
+          )}
         </CardContent>
       </Card>
     </div>

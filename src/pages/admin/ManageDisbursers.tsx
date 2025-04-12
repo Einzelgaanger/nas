@@ -1,28 +1,45 @@
-
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical, Edit, Trash2, Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -30,516 +47,489 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
-import { toast } from "@/components/ui/use-toast";
+import * as adminService from "@/services/adminService";
 import { Disburser, Region } from "@/types/database";
-import { fetchDisbursers, fetchRegions, createDisburser, updateDisburser, deleteDisburser, createRegion } from "@/services/adminService";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Database } from "@/integrations/supabase/types";
 
 const ManageDisbursers = () => {
-  const [isNewDisburserOpen, setIsNewDisburserOpen] = useState(false);
-  const [isEditDisburserOpen, setIsEditDisburserOpen] = useState(false);
-  const [isNewRegionOpen, setIsNewRegionOpen] = useState(false);
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-  
-  const [currentDisburser, setCurrentDisburser] = useState<Partial<Disburser>>({});
-  const [selectedDisburserForDelete, setSelectedDisburserForDelete] = useState<string>("");
-  const [newRegion, setNewRegion] = useState<string>("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentDisburser, setCurrentDisburser] = useState<Disburser | null>(
+    null
+  );
+  const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [disburserToDelete, setDisburserToDelete] = useState<
+    Disburser | null
+  >(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  // Query disbursers
-  const { 
-    data: disbursers, 
-    isLoading: loadingDisbursers 
+  const {
+    data: disbursers,
+    isLoading,
+    isError,
+    refetch: fetchDisbursers,
   } = useQuery({
-    queryKey: ['disbursers'],
-    queryFn: fetchDisbursers
+    queryKey: ["disbursers"],
+    queryFn: adminService.fetchDisbursers,
   });
 
-  // Query regions
-  const { 
-    data: regions, 
-    isLoading: loadingRegions 
-  } = useQuery({
-    queryKey: ['regions'],
-    queryFn: fetchRegions
+  const { data: regions, isLoading: isRegionsLoading } = useQuery({
+    queryKey: ["regions"],
+    queryFn: adminService.fetchRegions,
   });
 
-  // Mutations
-  const createDisburserMutation = useMutation({
-    mutationFn: createDisburser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['disbursers'] });
+  const { mutate: createDisburserMutation } = useMutation(
+    adminService.createDisburser,
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["disbursers"] });
+        toast({
+          title: "Disburser Created",
+          description: "New disburser has been created successfully.",
+        });
+        setIsCreating(false);
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Creation Failed",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Failed to create disburser",
+          variant: "destructive",
+        });
+      },
+    }
+  );
+
+  const { mutate: deleteDisburserMutation } = useMutation(
+    adminService.deleteDisburser,
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["disbursers"] });
+        toast({
+          title: "Disburser Deleted",
+          description: "Disburser has been deleted successfully.",
+        });
+        setIsDeleting(false);
+        setDisburserToDelete(null);
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Deletion Failed",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Failed to delete disburser",
+          variant: "destructive",
+        });
+        setIsDeleting(false);
+        setDisburserToDelete(null);
+      },
+    }
+  );
+
+  const updateDisburser = async (id: string, data: Disburser) => {
+    setIsUpdating(true);
+    try {
+      // Ensure password is included when updating a disburser
+      const updatedData = {
+        name: data.name,
+        phone_number: data.phone_number,
+        region_id: data.region_id,
+        password: data.password || '' // Ensure password is always provided
+      };
+      
+      await adminService.updateDisburser(id, updatedData);
+      fetchDisbursers();
       toast({
-        title: "Success",
-        description: "Disburser created successfully",
+        title: "Disburser Updated",
+        description: `Disburser ${data.name} has been updated successfully.`,
       });
-      setIsNewDisburserOpen(false);
-    },
-    onError: (error) => {
+      setIsEditing(false);
+      setCurrentDisburser(null);
+    } catch (error) {
+      console.error("Error updating disburser:", error);
       toast({
-        title: "Error",
-        description: `Error creating disburser: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update disburser",
         variant: "destructive",
       });
-    },
-  });
-
-  const updateDisburserMutation = useMutation({
-    mutationFn: ({ id, disburser }: { id: string; disburser: Partial<Disburser> }) => updateDisburser(id, disburser),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['disbursers'] });
-      toast({
-        title: "Success",
-        description: "Disburser updated successfully",
-      });
-      setIsEditDisburserOpen(false);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Error updating disburser: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deleteDisburserMutation = useMutation({
-    mutationFn: deleteDisburser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['disbursers'] });
-      toast({
-        title: "Success",
-        description: "Disburser deleted successfully",
-      });
-      setIsConfirmDeleteOpen(false);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Error deleting disburser: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const createRegionMutation = useMutation({
-    mutationFn: createRegion,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['regions'] });
-      toast({
-        title: "Success",
-        description: "Region created successfully",
-      });
-      setIsNewRegionOpen(false);
-      setNewRegion("");
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Error creating region: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleOpenNewDisburser = () => {
-    setCurrentDisburser({
-      name: '',
-      phone_number: '',
-      password: 'defaultpass123', // Default password
-      region_id: '',
-    });
-    setIsNewDisburserOpen(true);
-  };
-
-  const handleOpenEditDisburser = (disburser: Disburser) => {
-    setCurrentDisburser({...disburser});
-    setIsEditDisburserOpen(true);
-  };
-
-  const handleConfirmDelete = (id: string) => {
-    setSelectedDisburserForDelete(id);
-    setIsConfirmDeleteOpen(true);
-  };
-
-  const handleCreateDisburser = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (currentDisburser.name && currentDisburser.phone_number && currentDisburser.region_id) {
-      createDisburserMutation.mutate(currentDisburser);
-    } else {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const handleUpdateDisburser = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (currentDisburser.id && currentDisburser.name && currentDisburser.phone_number && currentDisburser.region_id) {
-      updateDisburserMutation.mutate({
-        id: currentDisburser.id,
-        disburser: {
-          name: currentDisburser.name,
-          phone_number: currentDisburser.phone_number,
-          region_id: currentDisburser.region_id,
-          password: currentDisburser.password
-        }
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
+  const handleDeleteConfirmation = (disburser: Disburser) => {
+    setDisburserToDelete(disburser);
+    setIsDeleting(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (disburserToDelete) {
+      deleteDisburserMutation(disburserToDelete.id);
     }
   };
 
-  const handleDeleteDisburser = () => {
-    if (selectedDisburserForDelete) {
-      deleteDisburserMutation.mutate(selectedDisburserForDelete);
-    }
-  };
+  if (isLoading || isRegionsLoading) {
+    return <div>Loading disbursers and regions...</div>;
+  }
 
-  const handleCreateRegion = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newRegion.trim()) {
-      createRegionMutation.mutate({ name: newRegion.trim() });
-    } else {
-      toast({
-        title: "Error",
-        description: "Please enter a region name",
-        variant: "destructive",
-      });
-    }
-  };
+  if (isError) {
+    return <div>Error fetching data. Please try again.</div>;
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-800">Manage Disbursers</h2>
-          <p className="text-gray-600">Add, edit, or remove disbursers from the system</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4 mt-4 sm:mt-0">
-          <Button onClick={() => setIsNewRegionOpen(true)}>
-            Add New Region
-          </Button>
-          <Button onClick={handleOpenNewDisburser}>
-            Add New Disburser
-          </Button>
-        </div>
+    <div className="container mx-auto py-6">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Manage Disbursers</h1>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Disburser
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add New Disburser</DialogTitle>
+              <DialogDescription>
+                Create a new disburser account.
+              </DialogDescription>
+            </DialogHeader>
+            <CreateDisburserForm
+              regions={regions || []}
+              onCreate={createDisburserMutation}
+              onClose={() => setIsCreating(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <Separator className="my-6" />
-
-      {loadingDisbursers ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="overflow-hidden">
-              <CardHeader className="p-4">
-                <Skeleton className="h-7 w-2/3" />
-                <Skeleton className="h-5 w-1/2 mt-2" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-4 w-40" />
-                  </div>
-                  <div className="space-y-1">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-4 w-40" />
-                  </div>
-                  <div className="flex justify-end space-x-2">
-                    <Skeleton className="h-9 w-20" />
-                    <Skeleton className="h-9 w-20" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {disbursers?.map((disburser) => (
-            <Card key={disburser.id}>
-              <CardHeader>
-                <CardTitle>{disburser.name}</CardTitle>
-                <CardDescription>
-                  {(disburser as any).regions?.name || "Unknown Region"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium">Phone Number</p>
-                    <p className="text-sm text-gray-500">{disburser.phone_number}</p>
-                  </div>
-                  <div className="flex justify-end space-x-2">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleOpenEditDisburser(disburser)}
-                    >
-                      Edit
-                    </Button>
-                    <Button 
-                      variant="destructive"
-                      onClick={() => handleConfirmDelete(disburser.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          
-          {disbursers?.length === 0 && (
-            <Card className="col-span-1 md:col-span-2">
-              <CardContent className="pt-6 text-center">
-                <p className="text-gray-500">No disbursers found. Add your first disburser to get started.</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
-
-      {/* New Disburser Dialog */}
-      <Dialog open={isNewDisburserOpen} onOpenChange={setIsNewDisburserOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Disburser</DialogTitle>
-            <DialogDescription>
-              Add a new disburser to the system. They will be able to register beneficiaries and allocate resources.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleCreateDisburser}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  placeholder="Enter disburser name"
-                  value={currentDisburser.name || ''}
-                  onChange={(e) => setCurrentDisburser({...currentDisburser, name: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  placeholder="Enter phone number"
-                  value={currentDisburser.phone_number || ''}
-                  onChange={(e) => setCurrentDisburser({...currentDisburser, phone_number: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Default Password</Label>
-                <Input
-                  id="password"
-                  type="text"
-                  value={currentDisburser.password || 'defaultpass123'}
-                  onChange={(e) => setCurrentDisburser({...currentDisburser, password: e.target.value})}
-                  required
-                />
-                <p className="text-xs text-gray-500">
-                  This is the password the disburser will use to log in.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="region">Region</Label>
-                {loadingRegions ? (
-                  <Skeleton className="h-10 w-full" />
-                ) : (
-                  <Select 
-                    value={currentDisburser.region_id || ''} 
-                    onValueChange={(value) => setCurrentDisburser({...currentDisburser, region_id: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a region" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {regions?.map((region) => (
-                        <SelectItem key={region.id} value={region.id}>
-                          {region.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                {regions?.length === 0 && (
-                  <p className="text-xs text-amber-500 mt-2">
-                    No regions available. Please add a region first.
-                  </p>
-                )}
-              </div>
-            </div>
-            <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setIsNewDisburserOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit"
-                disabled={createDisburserMutation.isPending || !regions?.length}
-              >
-                {createDisburserMutation.isPending ? "Creating..." : "Create Disburser"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <Card>
+        <CardHeader>
+          <CardTitle>Disbursers List</CardTitle>
+          <CardDescription>
+            Manage and update disburser accounts.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[100px]">ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Phone Number</TableHead>
+                  <TableHead>Region</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {disbursers?.map((disburser) => (
+                  <TableRow key={disburser.id}>
+                    <TableCell className="font-medium">{disburser.id}</TableCell>
+                    <TableCell>{disburser.name}</TableCell>
+                    <TableCell>{disburser.phone_number}</TableCell>
+                    <TableCell>{disburser.regions?.name}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setIsEditing(true);
+                              setCurrentDisburser(disburser);
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteConfirmation(disburser)}
+                            className="text-red-500 focus:text-red-500"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        </CardContent>
+      </Card>
 
       {/* Edit Disburser Dialog */}
-      <Dialog open={isEditDisburserOpen} onOpenChange={setIsEditDisburserOpen}>
-        <DialogContent>
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Disburser</DialogTitle>
             <DialogDescription>
-              Update disburser information.
+              Make changes to the selected disburser's account.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpdateDisburser}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">Name</Label>
-                <Input
-                  id="edit-name"
-                  placeholder="Enter disburser name"
-                  value={currentDisburser.name || ''}
-                  onChange={(e) => setCurrentDisburser({...currentDisburser, name: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-phone">Phone Number</Label>
-                <Input
-                  id="edit-phone"
-                  placeholder="Enter phone number"
-                  value={currentDisburser.phone_number || ''}
-                  onChange={(e) => setCurrentDisburser({...currentDisburser, phone_number: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-password">Password</Label>
-                <Input
-                  id="edit-password"
-                  type="text"
-                  value={currentDisburser.password || ''}
-                  onChange={(e) => setCurrentDisburser({...currentDisburser, password: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-region">Region</Label>
-                <Select 
-                  value={currentDisburser.region_id || ''} 
-                  onValueChange={(value) => setCurrentDisburser({...currentDisburser, region_id: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a region" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {regions?.map((region) => (
-                      <SelectItem key={region.id} value={region.id}>
-                        {region.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setIsEditDisburserOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit"
-                disabled={updateDisburserMutation.isPending}
-              >
-                {updateDisburserMutation.isPending ? "Updating..." : "Update Disburser"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* New Region Dialog */}
-      <Dialog open={isNewRegionOpen} onOpenChange={setIsNewRegionOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Region</DialogTitle>
-            <DialogDescription>
-              Add a new operational region to the system.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleCreateRegion}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="region-name">Region Name</Label>
-                <Input
-                  id="region-name"
-                  placeholder="Enter region name (e.g., Mwale Region)"
-                  value={newRegion}
-                  onChange={(e) => setNewRegion(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setIsNewRegionOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit"
-                disabled={createRegionMutation.isPending || !newRegion.trim()}
-              >
-                {createRegionMutation.isPending ? "Creating..." : "Create Region"}
-              </Button>
-            </DialogFooter>
-          </form>
+          {currentDisburser && (
+            <EditDisburserForm
+              disburser={currentDisburser}
+              regions={regions || []}
+              onUpdate={updateDisburser}
+              onClose={() => {
+                setIsEditing(false);
+                setCurrentDisburser(null);
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isConfirmDeleteOpen} onOpenChange={setIsConfirmDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Delete</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this disburser? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteDisburser}
-              className="bg-red-600 hover:bg-red-700"
+      <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Disburser</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this disburser? This action cannot
+              be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
             >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+};
+
+interface CreateDisburserFormProps {
+  regions: Region[];
+  onCreate: (
+    disburser: Omit<
+      Database["public"]["Tables"]["disbursers"]["Insert"],
+      "id" | "created_at" | "updated_at"
+    >
+  ) => void;
+  onClose: () => void;
+}
+
+const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
+  regions,
+  onCreate,
+  onClose,
+}) => {
+  const [name, setName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [regionId, setRegionId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const newDisburser = {
+        name,
+        phone_number: phoneNumber,
+        password,
+        region_id: regionId,
+      };
+      onCreate(newDisburser);
+      onClose();
+    } catch (error: any) {
+      console.error("Error creating disburser:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="grid gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
+          placeholder="Enter name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="phoneNumber">Phone Number</Label>
+        <Input
+          id="phoneNumber"
+          placeholder="Enter phone number"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <Input
+          id="password"
+          type="password"
+          placeholder="Enter password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="region">Region</Label>
+        <Select onValueChange={setRegionId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a region" />
+          </SelectTrigger>
+          <SelectContent>
+            {regions.map((region) => (
+              <SelectItem key={region.id} value={region.id}>
+                {region.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="secondary">
+            Cancel
+          </Button>
+        </DialogClose>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create"}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+};
+
+interface EditDisburserFormProps {
+  disburser: Disburser;
+  regions: Region[];
+  onUpdate: (id: string, disburser: Disburser) => Promise<void>;
+  onClose: () => void;
+}
+
+const EditDisburserForm: React.FC<EditDisburserFormProps> = ({
+  disburser,
+  regions,
+  onUpdate,
+  onClose,
+}) => {
+  const [name, setName] = useState(disburser.name);
+  const [phoneNumber, setPhoneNumber] = useState(disburser.phone_number);
+  const [password, setPassword] = useState(disburser.password);
+  const [regionId, setRegionId] = useState(disburser.region_id);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const updatedDisburser = {
+        ...disburser,
+        name,
+        phone_number: phoneNumber,
+        password,
+        region_id: regionId,
+      };
+      await onUpdate(disburser.id, updatedDisburser);
+      onClose();
+    } catch (error: any) {
+      console.error("Error updating disburser:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="grid gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
+          placeholder="Enter name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="phoneNumber">Phone Number</Label>
+        <Input
+          id="phoneNumber"
+          placeholder="Enter phone number"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <Input
+          id="password"
+          type="password"
+          placeholder="Enter password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="region">Region</Label>
+        <Select value={regionId} onValueChange={setRegionId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a region" />
+          </SelectTrigger>
+          <SelectContent>
+            {regions.map((region) => (
+              <SelectItem key={region.id} value={region.id}>
+                {region.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="secondary">
+            Cancel
+          </Button>
+        </DialogClose>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Updating..." : "Update"}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 };
 
