@@ -10,10 +10,11 @@ import { AnimatedIcons } from "@/components/ui/animated-icons";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { MobileNav } from "./MobileNav";
 
 export function AppLayout() {
   const { role } = useUserRole();
-  const isMobile = useIsMobile();
+  const { isMobile } = useIsMobile();
   const { user } = useUserInfo();
   
   // Get first letter of user's name for avatar
@@ -40,45 +41,11 @@ export function AppLayout() {
             </div>
           </header>
           
-          <main className="flex-1 p-3 sm:p-6 bg-gray-50 overflow-auto fade-in">
+          <main className="flex-1 p-3 sm:p-6 bg-gray-50 overflow-auto fade-in pb-20">
             <Outlet />
           </main>
           
-          {isMobile && (
-            <div className="mobile-menu shadow-lg">
-              {role === "admin" ? (
-                <>
-                  <a href="/dashboard" className="mobile-menu-item">
-                    <Shield size={20} />
-                    <span>Dashboard</span>
-                  </a>
-                  <a href="/admin/disbursers" className="mobile-menu-item">
-                    <Shield size={20} />
-                    <span>Disbursers</span>
-                  </a>
-                  <a href="/admin/beneficiaries" className="mobile-menu-item">
-                    <Shield size={20} />
-                    <span>Beneficiaries</span>
-                  </a>
-                  <a href="/admin/resources" className="mobile-menu-item">
-                    <Shield size={20} />
-                    <span>Resources</span>
-                  </a>
-                </>
-              ) : (
-                <>
-                  <a href="/disburser/register" className="mobile-menu-item">
-                    <Shield size={20} />
-                    <span>Register</span>
-                  </a>
-                  <a href="/disburser/allocate" className="mobile-menu-item">
-                    <Shield size={20} />
-                    <span>Allocate</span>
-                  </a>
-                </>
-              )}
-            </div>
-          )}
+          {isMobile && <MobileNav role={role} />}
         </div>
       </div>
     </SidebarProvider>

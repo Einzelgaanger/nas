@@ -7,454 +7,182 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
+    
+    /* Vibrant secure colors */
+    --secure-default: 255 70 95;
+    --secure-light: 255 100 130;
+    --secure-accent: 255 130 160;
+    
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Vibrant color palette */
-    --vibrant-blue: 210 100% 50%;
-    --vibrant-green: 142 76% 36%;
-    --vibrant-yellow: 48 100% 50%;
-    --vibrant-red: 0 84% 60%;
-    --vibrant-purple: 270 76% 53%;
-    
-    /* Secure Aid special colors */
-    --secure-DEFAULT: 230 76% 50%;
-    --secure-light: 230 76% 65%;
-    --secure-dark: 230 76% 35%;
-    --secure-accent: 260 80% 55%;
-    --aid-primary: 150 70% 40%;
-    --aid-secondary: 40 90% 60%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+@layer components {
+  /* Vibrant UI Elements */
+  .btn-vibrant {
+    @apply relative overflow-hidden transition-all duration-200 ease-in-out 
+    transform hover:scale-105 active:scale-95;
   }
-
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+  
+  .btn-vibrant:before {
+    @apply content-[''] absolute top-0 left-0 w-full h-full bg-white/20 
+    transform scale-x-0 origin-right transition-transform duration-500;
+  }
+  
+  .btn-vibrant:hover:before {
+    @apply transform scale-x-100 origin-left;
+  }
+  
+  /* Card Styles */
+  .vibrant-card {
+    @apply bg-white rounded-xl shadow-md overflow-hidden 
+    border border-gray-100 hover:shadow-lg transition-shadow duration-300;
+  }
+  
+  /* Animation Classes */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .slide-in {
+    animation: slideIn 0.5s ease-out forwards;
+  }
+  
+  .slide-in.animation-delay-100 {
+    animation-delay: 0.1s;
+  }
+  
+  .slide-in.animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+  
+  .slide-in.animation-delay-300 {
+    animation-delay: 0.3s;
+  }
+  
+  .floating-icon {
+    animation: float 6s ease-in-out infinite;
+    transform: translateY(0);
+  }
+  
+  /* Mobile UI */
+  .mobile-menu {
+    @apply bg-white border-t shadow-lg transition-transform duration-300;
+  }
+  
+  .mobile-menu-item {
+    @apply flex flex-col items-center justify-center p-2 text-xs text-secure-DEFAULT
+    hover:text-secure-accent transition-colors;
   }
 }
 
-/* Animation keyframes */
 @keyframes float {
-  0%, 100% {
+  0% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-15px);
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
   }
 }
 
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
-    transform: scale(1);
   }
   50% {
-    opacity: 0.8;
-    transform: scale(1.05);
+    opacity: 0.7;
   }
 }
 
 @keyframes fadeIn {
-  from {
+  0% {
     opacity: 0;
     transform: translateY(10px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
 @keyframes slideIn {
-  from {
+  0% {
     transform: translateX(-20px);
     opacity: 0;
   }
-  to {
+  100% {
     transform: translateX(0);
     opacity: 1;
   }
 }
 
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes shimmer {
-  from {
-    background-position: -100% 0;
-  }
-  to {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-/* Utility animation classes */
-.float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.pulse {
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-.slide-in {
-  animation: slideIn 0.5s ease-out forwards;
-}
-
-.rotate {
-  animation: rotate 10s linear infinite;
-}
-
-.bounce {
-  animation: bounce 2s ease-in-out infinite;
-}
-
-/* Enhanced component styles */
-.vibrant-card {
-  @apply bg-white rounded-xl shadow-lg border-2 border-blue-400 relative overflow-hidden;
-  transition: all 0.3s ease;
-}
-
-.vibrant-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-}
-
-.vibrant-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 5px;
-  background: linear-gradient(90deg, hsl(var(--vibrant-blue)), hsl(var(--vibrant-purple)));
-}
-
-.floating-icon {
-  @apply absolute pointer-events-none;
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Enhanced button styles */
-.button-gradient {
-  @apply relative overflow-hidden transition-all duration-300;
-  background: linear-gradient(90deg, hsl(var(--vibrant-blue)), hsl(var(--vibrant-purple)));
-}
-
-.button-gradient:hover {
-  background: linear-gradient(90deg, hsl(var(--vibrant-blue)), hsl(var(--vibrant-purple)), hsl(var(--vibrant-blue)));
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-.button-gradient::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: rgba(255, 255, 255, 0.1);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.button-gradient:hover::before {
-  opacity: 1;
-}
-
-/* Mobile responsive improvements */
+/* Responsive adjustments */
 @media (max-width: 640px) {
-  .mobile-menu {
-    @apply fixed bottom-0 left-0 right-0 z-50 bg-white border-t flex justify-around py-3 px-2;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  .mobile-hidden {
+    display: none;
   }
   
-  .mobile-menu-item {
-    @apply flex flex-col items-center justify-center text-xs;
-    transition: all 0.2s ease;
+  .mobile-only {
+    display: block;
   }
   
-  .mobile-menu-item:active {
-    transform: scale(0.95);
-  }
-  
-  /* Make cards full width on mobile */
-  .mobile-full-width {
-    @apply w-full !important;
-  }
-  
-  /* Adjust margins for better mobile experience */
-  .mobile-spacing {
-    @apply mx-2 my-2 !important;
-  }
-  
-  /* Improve form inputs on mobile */
-  input, select, textarea {
-    @apply text-base py-3 px-4 !important;
-  }
-  
-  /* Larger touch targets for mobile */
-  button {
-    @apply min-h-[44px] py-2 !important;
-  }
-  
-  /* Fix overflow issues on mobile */
-  .overflow-fix {
-    @apply overflow-x-hidden !important;
+  /* Add bottom padding to main content on mobile to account for fixed navigation */
+  main {
+    padding-bottom: 80px;
   }
 }
 
-/* Vibrant background gradients */
-.bg-gradient-blue-purple {
-  background: linear-gradient(135deg, hsl(var(--vibrant-blue)) 0%, hsl(var(--vibrant-purple)) 100%);
-}
-
-.bg-gradient-green-blue {
-  background: linear-gradient(135deg, hsl(var(--vibrant-green)) 0%, hsl(var(--vibrant-blue)) 100%);
-}
-
-.bg-gradient-yellow-red {
-  background: linear-gradient(135deg, hsl(var(--vibrant-yellow)) 0%, hsl(var(--vibrant-red)) 100%);
-}
-
-/* Animation helper classes */
-.animation-delay-100 {
-  animation-delay: 0.1s;
-}
-
-.animation-delay-200 {
-  animation-delay: 0.2s;
-}
-
-.animation-delay-300 {
-  animation-delay: 0.3s;
-}
-
-/* Improved button animations */
-.btn-vibrant {
-  @apply relative overflow-hidden transition-all duration-300;
-  transform-style: preserve-3d;
-}
-
-.btn-vibrant:hover {
-  @apply shadow-lg;
-  transform: translateY(-2px);
-}
-
-.btn-vibrant::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 100%;
-  background: rgba(255,255,255,0.2);
-  transition: width 0.3s ease;
-  z-index: -1;
-}
-
-.btn-vibrant:hover::after {
-  width: 100%;
-}
-
-/* Glassmorphism effects */
-.glass {
-  @apply bg-white/40 backdrop-blur-md border border-white/20;
-}
-
-.glass-dark {
-  @apply bg-black/20 backdrop-blur-md border border-white/10;
-}
-
-/* Card hover effects */
-.card-hover {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card-hover:hover {
-  transform: translateY(-5px);
-  @apply shadow-lg;
-}
-
-/* Badge styles */
-.badge {
-  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
-}
-
-.badge-blue {
-  @apply bg-blue-100 text-blue-800;
-}
-
-.badge-green {
-  @apply bg-green-100 text-green-800;
-}
-
-.badge-red {
-  @apply bg-red-100 text-red-800;
-}
-
-.badge-yellow {
-  @apply bg-yellow-100 text-yellow-800;
-}
-
-.badge-purple {
-  @apply bg-purple-100 text-purple-800;
-}
-
-/* Enhanced skeleton loading animation */
-.skeleton {
-  @apply bg-gray-200 rounded animate-pulse;
-}
-
-/* Progress indicator */
-.progress-bar {
-  height: 4px;
-  background: linear-gradient(to right, hsl(var(--vibrant-blue)), hsl(var(--vibrant-purple)));
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-/* Enhanced table styles */
-.table-enhanced {
-  @apply w-full border-collapse;
-}
-
-.table-enhanced thead tr {
-  @apply bg-gradient-to-r from-blue-500 to-purple-500 text-white;
-}
-
-.table-enhanced th {
-  @apply p-3 font-medium text-left;
-}
-
-.table-enhanced td {
-  @apply p-3 border-b border-gray-200;
-}
-
-.table-enhanced tbody tr:hover {
-  @apply bg-blue-50;
-}
-
-/* Card effects */
-.card-effect {
-  @apply relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300;
-}
-
-.card-effect::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transition: all 0.6s;
-  z-index: 1;
-}
-
-.card-effect:hover::after {
-  left: 100%;
+/* Ensure mobile menu has enough space */
+.pb-mobile-menu {
+  padding-bottom: 70px;
 }

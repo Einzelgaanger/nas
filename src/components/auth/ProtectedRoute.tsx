@@ -6,11 +6,13 @@ const ProtectedRoute = () => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
 
+  // If not authenticated, redirect to login
   if (!isAuthenticated) {
-    // Redirect to login page if not authenticated
+    console.log("Not authenticated, redirecting to login");
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
+  // User is authenticated, render the child routes
   return <Outlet />;
 };
 

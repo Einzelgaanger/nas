@@ -19,7 +19,15 @@ import ManageDisbursers from "./pages/admin/ManageDisbursers";
 import RegisterBeneficiary from "./pages/disburser/RegisterBeneficiary";
 import AllocateResources from "./pages/disburser/AllocateResources";
 
-const queryClient = new QueryClient();
+// Create a new QueryClient to fix stale data issues
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1
+    }
+  }
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -29,9 +37,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public route for login */}
             <Route path="/" element={<Login />} />
             
-            {/* Protected Admin & Disburser Routes */}
+            {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
                 {/* Common Routes */}
@@ -40,13 +49,12 @@ const App = () => (
                 {/* Admin Routes */}
                 <Route path="/admin" element={<Navigate to="/admin/disbursers" replace />} />
                 <Route path="/admin/disbursers" element={<ManageDisbursers />} />
-                <Route path="/admin/beneficiaries" element={<Dashboard />} /> {/* Placeholder */}
-                <Route path="/admin/resources" element={<Dashboard />} /> {/* Placeholder */}
-                <Route path="/admin/goods" element={<Dashboard />} /> {/* Placeholder */}
-                <Route path="/admin/alerts" element={<Dashboard />} /> {/* Placeholder */}
+                <Route path="/admin/beneficiaries" element={<Dashboard />} />
+                <Route path="/admin/resources" element={<Dashboard />} />
+                <Route path="/admin/goods" element={<Dashboard />} />
+                <Route path="/admin/alerts" element={<Dashboard />} />
                 
                 {/* Disburser Routes */}
-                <Route index element={<Navigate to="/disburser/register" replace />} />
                 <Route path="/disburser" element={<Navigate to="/disburser/register" replace />} />
                 <Route path="/disburser/register" element={<RegisterBeneficiary />} />
                 <Route path="/disburser/allocate" element={<AllocateResources />} />
