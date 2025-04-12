@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { Database } from "@/integrations/supabase/types";
 
 const Login = () => {
   const [role, setRole] = useState<"admin" | "disburser">("admin");

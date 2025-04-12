@@ -1,5 +1,6 @@
 
 import { Database as SupabaseDatabase } from "@/integrations/supabase/types";
+import { Json } from "@/integrations/supabase/types";
 
 export type Tables<T extends keyof SupabaseDatabase["public"]["Tables"]> = 
   SupabaseDatabase["public"]["Tables"][T]["Row"];
@@ -34,7 +35,7 @@ export interface Beneficiary {
   name: string;
   height?: number;
   estimated_age?: number;
-  unique_identifiers: Record<string, any>;
+  unique_identifiers: Json;
   registered_by: string;
   region_id: string;
   created_at: string;
@@ -61,8 +62,8 @@ export interface Allocation {
   id: string;
   beneficiary_id: string;
   disburser_id: string;
-  goods: Record<string, any>;
-  location: Record<string, any>;
+  goods: Json;
+  location: Json;
   allocated_at: string;
 }
 
@@ -70,7 +71,7 @@ export interface FraudAlert {
   id: string;
   beneficiary_id: string;
   disburser_id: string;
-  location: Record<string, any>;
+  location: Json;
   details?: string;
   attempted_at: string;
 }

@@ -32,10 +32,10 @@ export const fetchRegions = async (): Promise<Region[]> => {
   return data || [];
 };
 
-export const createDisburser = async (disburser: Partial<Disburser>): Promise<Disburser> => {
+export const createDisburser = async (disburser: Omit<Database["public"]["Tables"]["disbursers"]["Insert"], "id" | "created_at" | "updated_at">): Promise<Disburser> => {
   const { data, error } = await supabase
     .from("disbursers")
-    .insert([disburser])
+    .insert(disburser)
     .select()
     .single();
 
@@ -47,7 +47,7 @@ export const createDisburser = async (disburser: Partial<Disburser>): Promise<Di
   return data;
 };
 
-export const updateDisburser = async (id: string, disburser: Partial<Disburser>): Promise<Disburser> => {
+export const updateDisburser = async (id: string, disburser: Partial<Database["public"]["Tables"]["disbursers"]["Update"]>): Promise<Disburser> => {
   const { data, error } = await supabase
     .from("disbursers")
     .update(disburser)
@@ -75,10 +75,10 @@ export const deleteDisburser = async (id: string): Promise<void> => {
   }
 };
 
-export const createRegion = async (region: Partial<Region>): Promise<Region> => {
+export const createRegion = async (region: Omit<Database["public"]["Tables"]["regions"]["Insert"], "id" | "created_at">): Promise<Region> => {
   const { data, error } = await supabase
     .from("regions")
-    .insert([region])
+    .insert(region)
     .select()
     .single();
 

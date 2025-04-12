@@ -1,11 +1,12 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Beneficiary, Allocation, FraudAlert } from "@/types/database";
+import { Database } from "@/integrations/supabase/types";
 
-export const registerBeneficiary = async (beneficiary: Partial<Beneficiary>): Promise<Beneficiary> => {
+export const registerBeneficiary = async (beneficiary: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">): Promise<Beneficiary> => {
   const { data, error } = await supabase
     .from("beneficiaries")
-    .insert([beneficiary])
+    .insert(beneficiary)
     .select()
     .single();
 
@@ -14,7 +15,7 @@ export const registerBeneficiary = async (beneficiary: Partial<Beneficiary>): Pr
     throw new Error(error.message);
   }
 
-  return data;
+  return data as Beneficiary;
 };
 
 export const fetchBeneficiariesByRegion = async (regionId: string): Promise<Beneficiary[]> => {
@@ -28,7 +29,7 @@ export const fetchBeneficiariesByRegion = async (regionId: string): Promise<Bene
     throw new Error(error.message);
   }
 
-  return data || [];
+  return data as Beneficiary[];
 };
 
 export const fetchBeneficiaryById = async (id: string): Promise<Beneficiary> => {
@@ -43,7 +44,7 @@ export const fetchBeneficiaryById = async (id: string): Promise<Beneficiary> => 
     throw new Error(error.message);
   }
 
-  return data;
+  return data as Beneficiary;
 };
 
 export const fetchRegionalGoods = async (regionId: string): Promise<any[]> => {
@@ -84,10 +85,10 @@ export const checkRecentAllocation = async (beneficiaryId: string, timeWindowMin
   return data && data.length > 0;
 };
 
-export const createAllocation = async (allocation: Partial<Allocation>): Promise<Allocation> => {
+export const createAllocation = async (allocation: Omit<Database["public"]["Tables"]["allocations"]["Insert"], "id" | "allocated_at">): Promise<Allocation> => {
   const { data, error } = await supabase
     .from("allocations")
-    .insert([allocation])
+    .insert(allocation)
     .select()
     .single();
 
@@ -96,13 +97,13 @@ export const createAllocation = async (allocation: Partial<Allocation>): Promise
     throw new Error(error.message);
   }
 
-  return data;
+  return data as Allocation;
 };
 
-export const createFraudAlert = async (alert: Partial<FraudAlert>): Promise<FraudAlert> => {
+export const createFraudAlert = async (alert: Omit<Database["public"]["Tables"]["fraud_alerts"]["Insert"], "id" | "attempted_at">): Promise<FraudAlert> => {
   const { data, error } = await supabase
     .from("fraud_alerts")
-    .insert([alert])
+    .insert(alert)
     .select()
     .single();
 
@@ -111,5 +112,5 @@ export const createFraudAlert = async (alert: Partial<FraudAlert>): Promise<Frau
     throw new Error(error.message);
   }
 
-  return data;
+  return data as FraudAlert;
 };

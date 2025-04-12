@@ -15,14 +15,14 @@ const Dashboard = () => {
     },
     {
       title: "Registered Beneficiaries",
-      value: 1243,  // Fixed: removed comma
+      value: 1243,
       change: "+156 this week",
       icon: UserCheck,
       color: "bg-green-100 text-green-700"
     },
     {
       title: "Total Allocations",
-      value: 2891,  // Fixed: removed comma
+      value: 2891,
       change: "+43 today",
       icon: Package,
       color: "bg-purple-100 text-purple-700"
