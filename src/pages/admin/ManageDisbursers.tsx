@@ -5,6 +5,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,56 +83,53 @@ const ManageDisbursers = () => {
     queryFn: adminService.fetchRegions,
   });
 
-  const { mutate: createDisburserMutation } = useMutation(
-    adminService.createDisburser,
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["disbursers"] });
-        toast({
-          title: "Disburser Created",
-          description: "New disburser has been created successfully.",
-        });
-        setIsCreating(false);
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Creation Failed",
-          description:
-            error instanceof Error
-              ? error.message
-              : "Failed to create disburser",
-          variant: "destructive",
-        });
-      },
-    }
-  );
+  const { mutate: createDisburserMutation } = useMutation({
+    mutationFn: (newDisburser: Omit<Database["public"]["Tables"]["disbursers"]["Insert"], "id" | "created_at" | "updated_at">) => 
+      adminService.createDisburser(newDisburser),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["disbursers"] });
+      toast({
+        title: "Disburser Created",
+        description: "New disburser has been created successfully.",
+      });
+      setIsCreating(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Creation Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to create disburser",
+        variant: "destructive",
+      });
+    },
+  });
 
-  const { mutate: deleteDisburserMutation } = useMutation(
-    adminService.deleteDisburser,
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["disbursers"] });
-        toast({
-          title: "Disburser Deleted",
-          description: "Disburser has been deleted successfully.",
-        });
-        setIsDeleting(false);
-        setDisburserToDelete(null);
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Deletion Failed",
-          description:
-            error instanceof Error
-              ? error.message
-              : "Failed to delete disburser",
-          variant: "destructive",
-        });
-        setIsDeleting(false);
-        setDisburserToDelete(null);
-      },
-    }
-  );
+  const { mutate: deleteDisburserMutation } = useMutation({
+    mutationFn: (id: string) => adminService.deleteDisburser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["disbursers"] });
+      toast({
+        title: "Disburser Deleted",
+        description: "Disburser has been deleted successfully.",
+      });
+      setIsDeleting(false);
+      setDisburserToDelete(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Deletion Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete disburser",
+        variant: "destructive",
+      });
+      setIsDeleting(false);
+      setDisburserToDelete(null);
+    },
+  });
 
   const updateDisburser = async (id: string, data: Disburser) => {
     setIsUpdating(true);
@@ -361,7 +359,6 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
         region_id: regionId,
       };
       onCreate(newDisburser);
-      onClose();
     } catch (error: any) {
       console.error("Error creating disburser:", error);
     } finally {

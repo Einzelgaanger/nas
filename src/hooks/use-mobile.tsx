@@ -5,33 +5,32 @@ const MOBILE_BREAKPOINT = 768;
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
+  const [windowWidth, setWindowWidth] = React.useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 0
+  );
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setWindowWidth(width);
+      setIsMobile(width < MOBILE_BREAKPOINT);
     };
     
-    if (typeof mql.addEventListener === "function") {
-      mql.addEventListener("change", onChange);
-    } else if (typeof mql.addListener === "function") {
-      // For older browsers
-      mql.addListener(onChange);
-    }
+    // Handle resize events
+    window.addEventListener("resize", handleResize);
     
     // Set initial value
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    handleResize();
     
     return () => {
-      if (typeof mql.removeEventListener === "function") {
-        mql.removeEventListener("change", onChange);
-      } else if (typeof mql.removeListener === "function") {
-        // For older browsers
-        mql.removeListener(onChange);
-      }
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  return !!isMobile;
+  return {
+    isMobile: !!isMobile,
+    windowWidth,
+    isTablet: windowWidth >= MOBILE_BREAKPOINT && windowWidth < 1024,
+    isDesktop: windowWidth >= 1024,
+  };
 }
