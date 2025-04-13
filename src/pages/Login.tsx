@@ -29,10 +29,11 @@ const Login = () => {
       if (role === "admin") {
         // Admin login
         console.log("Trying admin login with:", identifier);
+        // Use lowercase for username to make it case insensitive
         const { data: admins, error } = await supabase
           .from("admins")
           .select()
-          .eq("username", identifier.toLowerCase())
+          .ilike("username", identifier.toLowerCase())
           .eq("password", password);
 
         if (error) {

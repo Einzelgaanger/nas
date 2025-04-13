@@ -5,6 +5,7 @@ export type UserInfo = {
   id?: string;
   name: string;
   region?: string;
+  region_id?: string; // Adding region_id as an optional property
   phone?: string;
 };
 
