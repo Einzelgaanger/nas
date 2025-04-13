@@ -20,6 +20,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [initialSetupDone, setInitialSetupDone] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { login, isAuthenticated } = useAuth();
@@ -29,6 +30,122 @@ const Login = () => {
     console.log(message);
     setDebugInfo(prev => [...prev, message]);
   };
+
+  // Initial setup to create default users if needed
+  useEffect(() => {
+    const setupInitialAccounts = async () => {
+      if (initialSetupDone) return;
+      
+      logDebug("Checking for initial setup...");
+      
+      try {
+        // Check if admin exists
+        const { data: admins, error: adminError } = await supabase
+          .from("admins")
+          .select("*");
+          
+        if (adminError) {
+          logDebug(`Error checking admins: ${adminError.message}`);
+          return;
+        }
+        
+        if (!admins || admins.length === 0) {
+          logDebug("No admin found, creating default admin...");
+          
+          // Create default admin
+          const { error: createError } = await supabase
+            .from("admins")
+            .insert([
+              { 
+                username: "admin", 
+                password: "NGO123",
+                name: "Default Admin"
+              }
+            ]);
+            
+          if (createError) {
+            logDebug(`Error creating admin: ${createError.message}`);
+          } else {
+            logDebug("Default admin created successfully");
+          }
+        } else {
+          logDebug(`Found ${admins.length} existing admin(s)`);
+        }
+        
+        // Check if any regions exist
+        const { data: regions, error: regionError } = await supabase
+          .from("regions")
+          .select("*");
+          
+        if (regionError) {
+          logDebug(`Error checking regions: ${regionError.message}`);
+          return;
+        }
+        
+        let defaultRegionId = "";
+        
+        if (!regions || regions.length === 0) {
+          logDebug("No regions found, creating default region...");
+          
+          // Create default region
+          const { data: newRegion, error: createRegionError } = await supabase
+            .from("regions")
+            .insert([{ name: "Default Region" }])
+            .select();
+            
+          if (createRegionError) {
+            logDebug(`Error creating region: ${createRegionError.message}`);
+          } else if (newRegion) {
+            logDebug("Default region created successfully");
+            defaultRegionId = newRegion[0].id;
+          }
+        } else {
+          logDebug(`Found ${regions.length} existing region(s)`);
+          defaultRegionId = regions[0].id;
+        }
+        
+        // Check if disburser exists
+        const { data: disbursers, error: disburserError } = await supabase
+          .from("disbursers")
+          .select("*");
+          
+        if (disburserError) {
+          logDebug(`Error checking disbursers: ${disburserError.message}`);
+          return;
+        }
+        
+        if ((!disbursers || disbursers.length === 0) && defaultRegionId) {
+          logDebug("No disburser found, creating default disburser...");
+          
+          // Create default disburser
+          const { error: createError } = await supabase
+            .from("disbursers")
+            .insert([
+              { 
+                name: "Sample Disburser", 
+                phone_number: "1234567890",
+                password: "pass123",
+                region_id: defaultRegionId
+              }
+            ]);
+            
+          if (createError) {
+            logDebug(`Error creating disburser: ${createError.message}`);
+          } else {
+            logDebug("Default disburser created successfully");
+          }
+        } else {
+          logDebug(`Found ${disbursers?.length || 0} existing disburser(s)`);
+        }
+        
+        setInitialSetupDone(true);
+      } catch (error) {
+        logDebug(`Setup error: ${error instanceof Error ? error.message : "Unknown error"}`);
+      }
+    };
+    
+    setupInitialAccounts();
+  }, [initialSetupDone]);
 
   // Check if already authenticated
   useEffect(() => {
