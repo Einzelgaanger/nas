@@ -19,10 +19,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { useAuth } from "@/hooks/useAuth";
 
 export function DisburserSidebar() {
   const location = useLocation();
   const { user } = useUserInfo();
+  const { logout } = useAuth();
   
   const menuItems = [
     {
@@ -38,10 +40,7 @@ export function DisburserSidebar() {
   ];
 
   const handleLogout = () => {
-    // Will implement logout functionality later
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("isLoggedIn");
-    window.location.href = "/";
+    logout();
   };
 
   return (

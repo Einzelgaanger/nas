@@ -32,7 +32,7 @@ export const AnimatedIcons: React.FC<AnimatedIconProps> = ({ className }) => {
   useEffect(() => {
     const checkPerformance = () => {
       // Check if it's a mobile device with a small screen as a simple heuristic
-      // for performance mode (instead of using navigator.deviceMemory)
+      // for performance mode (no longer using deviceMemory API which is not widely supported)
       if (isMobile && windowWidth < 640) {
         setPerformanceMode(true);
       }

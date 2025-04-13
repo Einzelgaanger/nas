@@ -28,57 +28,69 @@ const Login = () => {
     try {
       if (role === "admin") {
         // Admin login
+        console.log("Trying admin login with:", identifier);
         const { data: admins, error } = await supabase
           .from("admins")
           .select()
-          .eq("username", identifier)
-          .eq("password", password)
-          .single();
+          .eq("username", identifier.toLowerCase())
+          .eq("password", password);
 
         if (error) {
-          throw new Error("Invalid username or password");
+          throw new Error("Database error: " + error.message);
         }
 
-        if (admins) {
+        if (admins && admins.length > 0) {
+          const admin = admins[0];
           // Login successful
           login("admin", { 
-            name: admins.name, 
-            id: admins.id 
+            name: admin.name, 
+            id: admin.id 
           });
           
           navigate("/admin/disbursers");
           toast({
             title: "Login Successful",
-            description: `Welcome, ${admins.name}`,
+            description: `Welcome, ${admin.name}`,
           });
+        } else {
+          throw new Error("Invalid username or password");
         }
       } else {
         // Disburser login
+        console.log("Trying disburser login with:", identifier);
         const { data: disbursers, error } = await supabase
           .from("disbursers")
-          .select()
+          .select(`
+            *,
+            regions:region_id (
+              name
+            )
+          `)
           .eq("phone_number", identifier)
-          .eq("password", password)
-          .single();
+          .eq("password", password);
 
         if (error) {
-          throw new Error("Invalid phone number or password");
+          throw new Error("Database error: " + error.message);
         }
 
-        if (disbursers) {
+        if (disbursers && disbursers.length > 0) {
+          const disburser = disbursers[0];
           // Login successful
           login("disburser", { 
-            name: disbursers.name, 
-            id: disbursers.id,
-            phone: disbursers.phone_number,
-            region: disbursers.region_id
+            name: disburser.name, 
+            id: disburser.id,
+            phone: disburser.phone_number,
+            region: disburser.regions?.name || "",
+            region_id: disburser.region_id
           });
           
           navigate("/disburser/register");
           toast({
             title: "Login Successful",
-            description: `Welcome, ${disbursers.name}`,
+            description: `Welcome, ${disburser.name}`,
           });
+        } else {
+          throw new Error("Invalid phone number or password");
         }
       }
     } catch (error) {
@@ -168,7 +180,12 @@ const Login = () => {
               />
               {role === "admin" && (
                 <p className="text-xs text-gray-500 mt-2">
-                  Default admin password: NGO123
+                  Default admin: username "admin", password "NGO123"
+                </p>
+              )}
+              {role === "disburser" && (
+                <p className="text-xs text-gray-500 mt-2">
+                  Sample disburser: phone "1234567890", password "pass123"
                 </p>
               )}
             </div>

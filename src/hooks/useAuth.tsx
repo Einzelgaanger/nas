@@ -21,7 +21,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { role, updateRole } = useUserRole();
   const { user, updateUser } = useUserInfo();
 
+  useEffect(() => {
+    console.log("Auth Provider state:", { isAuthenticated, role, user });
+  }, [isAuthenticated, role, user]);
+
   const login = (newRole: "admin" | "disburser", userInfo: UserInfo) => {
+    console.log("Login called with:", { newRole, userInfo });
     setIsAuthenticated(true);
     updateRole(newRole);
     updateUser(userInfo);
@@ -29,10 +34,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    console.log("Logout called");
     setIsAuthenticated(false);
     updateRole(null);
     updateUser(null);
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("userInfo");
     window.location.href = "/";
   };
 

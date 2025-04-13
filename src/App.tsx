@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import { AppLayout } from "./components/layout/AppLayout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Index from "./pages/Index";
 
 // Admin pages
 import ManageDisbursers from "./pages/admin/ManageDisbursers";
@@ -39,6 +40,9 @@ const App = () => (
           <Routes>
             {/* Public route for login */}
             <Route path="/" element={<Login />} />
+            
+            {/* Index route for routing based on auth status */}
+            <Route path="/index" element={<Index />} />
             
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
