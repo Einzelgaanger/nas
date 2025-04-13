@@ -29,19 +29,27 @@ const Login = () => {
       if (role === "admin") {
         // Admin login
         console.log("Trying admin login with:", identifier);
-        // Use lowercase for username to make it case insensitive
+        
+        // Don't use filters for authentication, fetch all admins and check manually for better security
         const { data: admins, error } = await supabase
           .from("admins")
-          .select()
-          .ilike("username", identifier.toLowerCase())
-          .eq("password", password);
+          .select("*");
 
         if (error) {
+          console.error("Database error:", error);
           throw new Error("Database error: " + error.message);
         }
 
-        if (admins && admins.length > 0) {
-          const admin = admins[0];
+        console.log("Found admins:", admins?.length || 0);
+        
+        // Find admin with matching username (case insensitive) and password
+        const admin = admins?.find(a => 
+          a.username.toLowerCase() === identifier.toLowerCase() && 
+          a.password === password
+        );
+
+        if (admin) {
+          console.log("Admin found, logging in:", admin.name);
           // Login successful
           login("admin", { 
             name: admin.name, 
@@ -54,11 +62,14 @@ const Login = () => {
             description: `Welcome, ${admin.name}`,
           });
         } else {
+          console.log("No matching admin found");
           throw new Error("Invalid username or password");
         }
       } else {
         // Disburser login
         console.log("Trying disburser login with:", identifier);
+        
+        // Similar approach for disbursers - fetch all and manually check
         const { data: disbursers, error } = await supabase
           .from("disbursers")
           .select(`
@@ -66,16 +77,23 @@ const Login = () => {
             regions:region_id (
               name
             )
-          `)
-          .eq("phone_number", identifier)
-          .eq("password", password);
+          `);
 
         if (error) {
+          console.error("Database error:", error);
           throw new Error("Database error: " + error.message);
         }
 
-        if (disbursers && disbursers.length > 0) {
-          const disburser = disbursers[0];
+        console.log("Found disbursers:", disbursers?.length || 0);
+        
+        // Find disburser with matching phone number and password
+        const disburser = disbursers?.find(d => 
+          d.phone_number === identifier && 
+          d.password === password
+        );
+
+        if (disburser) {
+          console.log("Disburser found, logging in:", disburser.name);
           // Login successful
           login("disburser", { 
             name: disburser.name, 
@@ -91,6 +109,7 @@ const Login = () => {
             description: `Welcome, ${disburser.name}`,
           });
         } else {
+          console.log("No matching disburser found");
           throw new Error("Invalid phone number or password");
         }
       }

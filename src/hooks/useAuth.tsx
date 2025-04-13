@@ -33,6 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateRole(newRole);
     updateUser(userInfo);
     localStorage.setItem("isLoggedIn", "true");
+    console.log("Login completed, auth state updated");
   };
 
   const logout = () => {

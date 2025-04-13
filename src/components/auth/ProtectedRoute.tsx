@@ -1,10 +1,15 @@
 
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 const ProtectedRoute = () => {
   const { isAuthenticated, role } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    console.log("ProtectedRoute mounted, auth status:", { isAuthenticated, role, path: location.pathname });
+  }, [isAuthenticated, role, location]);
 
   console.log("ProtectedRoute check:", { isAuthenticated, role, path: location.pathname });
 
