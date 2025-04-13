@@ -29,21 +29,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = (newRole: "admin" | "disburser", userInfo: UserInfo) => {
     console.log("Login called with:", { newRole, userInfo });
-    setIsAuthenticated(true);
+    
+    // Set auth state in specific order to prevent race conditions
+    localStorage.setItem("isLoggedIn", "true");
     updateRole(newRole);
     updateUser(userInfo);
-    localStorage.setItem("isLoggedIn", "true");
+    setIsAuthenticated(true);
+    
     console.log("Login completed, auth state updated");
   };
 
   const logout = () => {
     console.log("Logout called");
-    setIsAuthenticated(false);
-    updateRole(null);
-    updateUser(null);
+    
+    // Clear storage first
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userRole");
     localStorage.removeItem("userInfo");
+    
+    // Then update state
+    setIsAuthenticated(false);
+    updateRole(null);
+    updateUser(null);
+    
     window.location.href = "/";
   };
 

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,24 +11,42 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Shield, Users, UserCheck } from "lucide-react";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Login = () => {
   const [role, setRole] = useState<"admin" | "disburser">("admin");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
+
+  // Debug logging function
+  const logDebug = (message: string) => {
+    console.log(message);
+    setDebugInfo(prev => [...prev, message]);
+  };
+
+  // Check if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      logDebug("User is already authenticated, redirecting...");
+      navigate("/index");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setDebugInfo([]);
 
     try {
       if (role === "admin") {
         // Admin login
-        console.log("Trying admin login with:", identifier);
+        logDebug(`Trying admin login with: ${identifier}`);
         
         // Don't use filters for authentication, fetch all admins and check manually for better security
         const { data: admins, error } = await supabase
@@ -36,11 +54,15 @@ const Login = () => {
           .select("*");
 
         if (error) {
-          console.error("Database error:", error);
+          logDebug(`Database error: ${error.message}`);
           throw new Error("Database error: " + error.message);
         }
 
-        console.log("Found admins:", admins?.length || 0);
+        logDebug(`Found admins: ${admins?.length || 0}`);
+        
+        if (admins) {
+          logDebug(`Admin usernames available: ${admins.map(a => a.username).join(', ')}`);
+        }
         
         // Find admin with matching username (case insensitive) and password
         const admin = admins?.find(a => 
@@ -49,7 +71,7 @@ const Login = () => {
         );
 
         if (admin) {
-          console.log("Admin found, logging in:", admin.name);
+          logDebug(`Admin found, logging in: ${admin.name}`);
           // Login successful
           login("admin", { 
             name: admin.name, 
@@ -62,12 +84,12 @@ const Login = () => {
             description: `Welcome, ${admin.name}`,
           });
         } else {
-          console.log("No matching admin found");
+          logDebug("No matching admin found");
           throw new Error("Invalid username or password");
         }
       } else {
         // Disburser login
-        console.log("Trying disburser login with:", identifier);
+        logDebug(`Trying disburser login with: ${identifier}`);
         
         // Similar approach for disbursers - fetch all and manually check
         const { data: disbursers, error } = await supabase
@@ -80,11 +102,15 @@ const Login = () => {
           `);
 
         if (error) {
-          console.error("Database error:", error);
+          logDebug(`Database error: ${error.message}`);
           throw new Error("Database error: " + error.message);
         }
 
-        console.log("Found disbursers:", disbursers?.length || 0);
+        logDebug(`Found disbursers: ${disbursers?.length || 0}`);
+        
+        if (disbursers) {
+          logDebug(`Disburser phone numbers available: ${disbursers.map(d => d.phone_number).join(', ')}`);
+        }
         
         // Find disburser with matching phone number and password
         const disburser = disbursers?.find(d => 
@@ -93,7 +119,7 @@ const Login = () => {
         );
 
         if (disburser) {
-          console.log("Disburser found, logging in:", disburser.name);
+          logDebug(`Disburser found, logging in: ${disburser.name}`);
           // Login successful
           login("disburser", { 
             name: disburser.name, 
@@ -109,12 +135,13 @@ const Login = () => {
             description: `Welcome, ${disburser.name}`,
           });
         } else {
-          console.log("No matching disburser found");
+          logDebug("No matching disburser found");
           throw new Error("Invalid phone number or password");
         }
       }
     } catch (error) {
       console.error("Login error:", error);
+      logDebug(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
       toast({
         title: "Login Failed",
         description: error instanceof Error ? error.message : "Invalid credentials",
@@ -209,6 +236,17 @@ const Login = () => {
                 </p>
               )}
             </div>
+            <div className="text-right">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowDebug(!showDebug)} 
+                className="text-xs text-gray-500"
+              >
+                {showDebug ? "Hide Debug" : "Show Debug"}
+              </Button>
+            </div>
           </CardContent>
           <CardFooter className="flex-col">
             <Button type="submit" className="w-full btn-vibrant bg-gradient-to-r from-secure-DEFAULT to-secure-accent text-white hover:shadow-lg" disabled={isLoading}>
@@ -224,6 +262,21 @@ const Login = () => {
           </CardFooter>
         </form>
       </Card>
+
+      <Dialog open={showDebug} onOpenChange={setShowDebug}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Debug Information</DialogTitle>
+          </DialogHeader>
+          <div className="bg-gray-100 p-4 rounded text-sm font-mono">
+            <pre className="whitespace-pre-wrap">
+              {debugInfo.length > 0 ? 
+                debugInfo.map((log, i) => <div key={i}>{log}</div>) : 
+                "No debug information available yet."}
+            </pre>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
