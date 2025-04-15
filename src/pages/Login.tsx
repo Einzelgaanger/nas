@@ -9,9 +9,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Shield, Users, UserCheck } from "lucide-react";
+import { Shield, Users, UserCheck, AlertCircle } from "lucide-react";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ensureInitialSetup } from "@/services/setupService";
 
 const Login = () => {
@@ -22,6 +22,7 @@ const Login = () => {
   const [showDebug, setShowDebug] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [isSettingUp, setIsSettingUp] = useState(true);
+  const [setupError, setSetupError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { login, isAuthenticated } = useAuth();
@@ -36,27 +37,30 @@ const Login = () => {
   useEffect(() => {
     const setupInitialAccounts = async () => {
       setIsSettingUp(true);
+      setSetupError(null);
       logDebug("Starting initial setup process...");
       
       try {
         const success = await ensureInitialSetup();
         
         if (success) {
-          logDebug("Initial setup completed successfully");
+          logDebug("Initial setup completed successfully or found existing accounts");
           // Pre-fill admin credentials for convenience during development
           setRole("admin");
           setIdentifier("admin");
           setPassword("NGO123");
         } else {
           logDebug("Initial setup failed");
+          setSetupError("Failed to create initial accounts. This may be due to Row Level Security (RLS) policies in Supabase. Please check the console logs for details.");
           toast({
             title: "Setup Error",
-            description: "Failed to create initial accounts. Please check console for details.",
+            description: "Failed to create initial accounts. Please check logs for details.",
             variant: "destructive",
           });
         }
       } catch (error) {
         logDebug(`Setup error: ${error instanceof Error ? error.message : "Unknown error"}`);
+        setSetupError(`Error during setup: ${error instanceof Error ? error.message : "Unknown error"}`);
       } finally {
         setIsSettingUp(false);
       }
@@ -211,6 +215,13 @@ const Login = () => {
               <span>Setting up default accounts...</span>
             </div>
           )}
+          
+          {setupError && (
+            <div className="flex items-center justify-center mt-4 p-3 bg-red-50 text-red-700 rounded-lg border border-red-200">
+              <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+              <p className="text-sm">{setupError}</p>
+            </div>
+          )}
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
@@ -309,6 +320,9 @@ const Login = () => {
         <DialogContent className="max-w-lg max-h-[80vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>Debug Information</DialogTitle>
+            <DialogDescription>
+              This dialog shows detailed information about login attempts and setup processes.
+            </DialogDescription>
           </DialogHeader>
           <div className="bg-gray-100 p-4 rounded text-sm font-mono">
             <pre className="whitespace-pre-wrap">
