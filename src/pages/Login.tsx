@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Shield, Users, UserCheck } from "lucide-react";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ensureInitialSetup } from "@/services/setupService";
 
 const Login = () => {
   const [role, setRole] = useState<"admin" | "disburser">("admin");
@@ -20,7 +21,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
-  const [initialSetupDone, setInitialSetupDone] = useState(false);
+  const [isSettingUp, setIsSettingUp] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { login, isAuthenticated } = useAuth();
@@ -34,118 +35,35 @@ const Login = () => {
   // Initial setup to create default users if needed
   useEffect(() => {
     const setupInitialAccounts = async () => {
-      if (initialSetupDone) return;
-      
-      logDebug("Checking for initial setup...");
+      setIsSettingUp(true);
+      logDebug("Starting initial setup process...");
       
       try {
-        // Check if admin exists
-        const { data: admins, error: adminError } = await supabase
-          .from("admins")
-          .select("*");
-          
-        if (adminError) {
-          logDebug(`Error checking admins: ${adminError.message}`);
-          return;
-        }
+        const success = await ensureInitialSetup();
         
-        if (!admins || admins.length === 0) {
-          logDebug("No admin found, creating default admin...");
-          
-          // Create default admin
-          const { error: createError } = await supabase
-            .from("admins")
-            .insert([
-              { 
-                username: "admin", 
-                password: "NGO123",
-                name: "Default Admin"
-              }
-            ]);
-            
-          if (createError) {
-            logDebug(`Error creating admin: ${createError.message}`);
-          } else {
-            logDebug("Default admin created successfully");
-          }
+        if (success) {
+          logDebug("Initial setup completed successfully");
+          // Pre-fill admin credentials for convenience during development
+          setRole("admin");
+          setIdentifier("admin");
+          setPassword("NGO123");
         } else {
-          logDebug(`Found ${admins.length} existing admin(s)`);
+          logDebug("Initial setup failed");
+          toast({
+            title: "Setup Error",
+            description: "Failed to create initial accounts. Please check console for details.",
+            variant: "destructive",
+          });
         }
-        
-        // Check if any regions exist
-        const { data: regions, error: regionError } = await supabase
-          .from("regions")
-          .select("*");
-          
-        if (regionError) {
-          logDebug(`Error checking regions: ${regionError.message}`);
-          return;
-        }
-        
-        let defaultRegionId = "";
-        
-        if (!regions || regions.length === 0) {
-          logDebug("No regions found, creating default region...");
-          
-          // Create default region
-          const { data: newRegion, error: createRegionError } = await supabase
-            .from("regions")
-            .insert([{ name: "Default Region" }])
-            .select();
-            
-          if (createRegionError) {
-            logDebug(`Error creating region: ${createRegionError.message}`);
-          } else if (newRegion) {
-            logDebug("Default region created successfully");
-            defaultRegionId = newRegion[0].id;
-          }
-        } else {
-          logDebug(`Found ${regions.length} existing region(s)`);
-          defaultRegionId = regions[0].id;
-        }
-        
-        // Check if disburser exists
-        const { data: disbursers, error: disburserError } = await supabase
-          .from("disbursers")
-          .select("*");
-          
-        if (disburserError) {
-          logDebug(`Error checking disbursers: ${disburserError.message}`);
-          return;
-        }
-        
-        if ((!disbursers || disbursers.length === 0) && defaultRegionId) {
-          logDebug("No disburser found, creating default disburser...");
-          
-          // Create default disburser
-          const { error: createError } = await supabase
-            .from("disbursers")
-            .insert([
-              { 
-                name: "Sample Disburser", 
-                phone_number: "1234567890",
-                password: "pass123",
-                region_id: defaultRegionId
-              }
-            ]);
-            
-          if (createError) {
-            logDebug(`Error creating disburser: ${createError.message}`);
-          } else {
-            logDebug("Default disburser created successfully");
-          }
-        } else {
-          logDebug(`Found ${disbursers?.length || 0} existing disburser(s)`);
-        }
-        
-        setInitialSetupDone(true);
       } catch (error) {
         logDebug(`Setup error: ${error instanceof Error ? error.message : "Unknown error"}`);
+      } finally {
+        setIsSettingUp(false);
       }
     };
     
     setupInitialAccounts();
-  }, [initialSetupDone]);
+  }, [toast]);
 
   // Check if already authenticated
   useEffect(() => {
@@ -286,6 +204,13 @@ const Login = () => {
           </div>
           <CardTitle className="text-2xl bg-gradient-to-r from-secure-DEFAULT to-secure-accent bg-clip-text text-transparent">Secure Aid Distribution System</CardTitle>
           <CardDescription className="text-gray-600">Please sign in to continue</CardDescription>
+          
+          {isSettingUp && (
+            <div className="flex items-center justify-center space-x-2 mt-4 text-sm text-gray-500">
+              <div className="animate-spin h-4 w-4 border-2 border-secure-DEFAULT border-t-transparent rounded-full"></div>
+              <span>Setting up default accounts...</span>
+            </div>
+          )}
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
@@ -366,7 +291,7 @@ const Login = () => {
             </div>
           </CardContent>
           <CardFooter className="flex-col">
-            <Button type="submit" className="w-full btn-vibrant bg-gradient-to-r from-secure-DEFAULT to-secure-accent text-white hover:shadow-lg" disabled={isLoading}>
+            <Button type="submit" className="w-full btn-vibrant bg-gradient-to-r from-secure-DEFAULT to-secure-accent text-white hover:shadow-lg" disabled={isLoading || isSettingUp}>
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
