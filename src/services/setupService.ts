@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Function to verify if setup is already complete
 export const isSetupComplete = async (): Promise<boolean> => {
-  // Check if admin exists
   const { data: admins, error: adminError } = await supabase
     .from("admins")
     .select("id")
@@ -14,11 +13,7 @@ export const isSetupComplete = async (): Promise<boolean> => {
     return false;
   }
 
-  if (admins && admins.length > 0) {
-    return true;
-  }
-
-  return false;
+  return admins && admins.length > 0;
 };
 
 // Function to perform initial database setup
@@ -26,9 +21,9 @@ export const performInitialSetup = async (): Promise<boolean> => {
   console.log("Performing initial setup...");
   
   try {
-    // Create default admin first (bypassing RLS)
-    const { error: adminError } = await supabase.auth.signUp({
-      email: 'admin@example.com',
+    // Use a more valid email format
+    const { error: adminAuthError } = await supabase.auth.signUp({
+      email: 'initial.admin@secureaid.network',
       password: 'NGO123',
       options: {
         data: {
@@ -38,9 +33,9 @@ export const performInitialSetup = async (): Promise<boolean> => {
       }
     });
       
-    if (adminError) {
-      console.error("Error creating admin authentication:", adminError);
-      // Continue anyway as we'll create the local admin record
+    if (adminAuthError) {
+      console.error("Error creating admin authentication:", adminAuthError);
+      // Continue with local admin creation
     }
     
     // Create default admin in admins table
@@ -82,7 +77,7 @@ export const performInitialSetup = async (): Promise<boolean> => {
     
     // Create default disburser
     const { error: disburserAuthError } = await supabase.auth.signUp({
-      email: 'disburser@example.com',
+      email: 'initial.disburser@secureaid.network',
       password: 'pass123',
       options: {
         data: {
@@ -94,7 +89,7 @@ export const performInitialSetup = async (): Promise<boolean> => {
     
     if (disburserAuthError) {
       console.error("Error creating disburser authentication:", disburserAuthError);
-      // Continue anyway as we'll create the local disburser record
+      // Continue with local disburser creation
     }
     
     // Create default disburser in disbursers table
@@ -123,7 +118,6 @@ export const performInitialSetup = async (): Promise<boolean> => {
   }
 };
 
-// Modified approach to check for any existing data first
 export const ensureInitialSetup = async (): Promise<boolean> => {
   try {
     console.log("Checking for initial setup...");
@@ -144,54 +138,22 @@ export const ensureInitialSetup = async (): Promise<boolean> => {
       console.log("No admin found, creating default admin...");
     }
     
-    // Check if regions exist
-    const { data: regions, error: regionError } = await supabase
-      .from("regions")
-      .select("id, name")
-      .limit(1);
-
-    if (regionError) {
-      console.error("Error checking regions:", regionError);
-    } else {
-      console.log(`Found ${regions?.length || 0} existing region(s)`);
-      if (regions && regions.length === 0) {
-        console.log("No regions found, creating default region...");
-      }
-    }
-    
-    // Check if disbursers exist
-    const { data: disbursers, error: disburserError } = await supabase
-      .from("disbursers")
-      .select("id, name")
-      .limit(5);
-
-    if (disburserError) {
-      console.error("Error checking disbursers:", disburserError);
-    } else {
-      console.log(`Found ${disbursers?.length || 0} existing disburser(s)`);
-    }
-    
-    // If we didn't find any admins, try to create them
-    if (!admins || admins.length === 0) {
-      // Try setup up to 3 times
-      for (let i = 0; i < 3; i++) {
-        console.log(`Attempt ${i+1} to complete setup...`);
-        const success = await performInitialSetup();
-        
-        if (success) {
-          console.log("Setup completed successfully");
-          return true;
-        }
-        
-        // Wait a bit before trying again
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    // Try setup up to 3 times
+    for (let i = 0; i < 3; i++) {
+      console.log(`Attempt ${i+1} to complete setup...`);
+      const success = await performInitialSetup();
+      
+      if (success) {
+        console.log("Setup completed successfully");
+        return true;
       }
       
-      console.error("Failed to complete setup after multiple attempts");
-      return false;
+      // Wait a bit before trying again
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    return true;
+    console.error("Failed to complete setup after multiple attempts");
+    return false;
   } catch (error) {
     console.error("Setup error:", error);
     return false;
