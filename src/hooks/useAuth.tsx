@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { useUserRole } from "./useUserRole";
 import { useUserInfo, UserInfo } from "./useUserInfo";
 
@@ -15,8 +15,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    const storedValue = localStorage.getItem("isLoggedIn");
-    console.log("Initial auth state from localStorage:", storedValue);
     return localStorage.getItem("isLoggedIn") === "true";
   });
   

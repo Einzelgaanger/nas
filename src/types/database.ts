@@ -56,7 +56,12 @@ export interface RegionalGoods {
   quantity: number;
   created_at: string;
   updated_at: string;
-  goods_types?: GoodsType;
+  goods_types?: {
+    id: string;
+    name: string;
+    description?: string;
+    created_at: string;
+  };
 }
 
 export interface Allocation {
