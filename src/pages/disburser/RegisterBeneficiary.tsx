@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,9 +26,13 @@ const RegisterBeneficiary = () => {
 
   const fetchBeneficiaries = async () => {
     try {
-      if (user?.region) {
-        const fetchedBeneficiaries = await fetchBeneficiariesByRegion(user.region);
+      if (user?.region && typeof user.region === 'string') {
+        const regionId = user.region;
+        console.log("Fetching beneficiaries for region:", regionId);
+        const fetchedBeneficiaries = await fetchBeneficiariesByRegion(regionId);
         setBeneficiaries(fetchedBeneficiaries);
+      } else {
+        console.error("No valid region ID available:", user?.region);
       }
     } catch (error) {
       console.error("Error fetching beneficiaries:", error);
@@ -42,7 +45,9 @@ const RegisterBeneficiary = () => {
   };
 
   useEffect(() => {
-    fetchBeneficiaries();
+    if (user?.region) {
+      fetchBeneficiaries();
+    }
   }, [user?.region]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,9 +59,8 @@ const RegisterBeneficiary = () => {
         throw new Error("User region or ID not available");
       }
 
-      // Create the beneficiary with required fields
       const newBeneficiary = {
-        name: beneficiaryName, // Ensure name is provided
+        name: beneficiaryName,
         unique_identifiers: JSON.stringify(uniqueIdentifiers),
         region_id: user.region,
         registered_by: user.id,
@@ -64,6 +68,7 @@ const RegisterBeneficiary = () => {
         estimated_age: age
       };
       
+      console.log("Registering beneficiary with data:", newBeneficiary);
       await registerBeneficiary(newBeneficiary);
       
       toast({
@@ -71,13 +76,11 @@ const RegisterBeneficiary = () => {
         description: `Beneficiary ${beneficiaryName} has been registered successfully.`,
       });
       
-      // Reset form
       setBeneficiaryName("");
       setAge(undefined);
       setHeight(undefined);
       setUniqueIdentifiers([]);
       
-      // Refresh beneficiary list
       fetchBeneficiaries();
     } catch (error) {
       console.error("Error registering beneficiary:", error);
@@ -95,7 +98,6 @@ const RegisterBeneficiary = () => {
     <div className="relative flex flex-col md:flex-row h-full p-4 gap-4 bg-gradient-to-br from-green-50 to-blue-50 min-h-screen">
       <AnimatedIcons className="opacity-20" />
       
-      {/* Registration Form */}
       <Card className="w-full md:w-1/2 bg-white/90 backdrop-blur-sm shadow-lg rounded-lg hover:shadow-xl transition-all duration-300 border-green-200">
         <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg">
           <CardTitle className="text-xl font-bold">Register Beneficiary</CardTitle>
@@ -167,7 +169,6 @@ const RegisterBeneficiary = () => {
         </CardContent>
       </Card>
 
-      {/* Beneficiary List */}
       <Card className="w-full md:w-1/2 bg-white/90 backdrop-blur-sm shadow-lg rounded-lg hover:shadow-xl transition-all duration-300 mt-4 md:mt-0 border-blue-200">
         <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-t-lg">
           <CardTitle className="text-xl font-bold flex items-center gap-2">

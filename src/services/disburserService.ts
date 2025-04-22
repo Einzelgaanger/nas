@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Beneficiary, Allocation, FraudAlert } from "@/types/database";
 import { Database } from "@/integrations/supabase/types";
@@ -19,6 +18,12 @@ export const registerBeneficiary = async (beneficiary: Omit<Database["public"]["
 };
 
 export const fetchBeneficiariesByRegion = async (regionId: string): Promise<Beneficiary[]> => {
+  // Ensure regionId is a valid UUID
+  if (!regionId || !isValidUUID(regionId)) {
+    console.error("Invalid region ID:", regionId);
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("beneficiaries")
     .select("*")
@@ -30,6 +35,12 @@ export const fetchBeneficiariesByRegion = async (regionId: string): Promise<Bene
   }
 
   return data as Beneficiary[];
+};
+
+// Helper function to validate UUIDs
+const isValidUUID = (uuid: string) => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
 };
 
 export const fetchBeneficiaryById = async (id: string): Promise<Beneficiary> => {
