@@ -1,8 +1,14 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Beneficiary, Allocation, FraudAlert } from "@/types/database";
 import { Database } from "@/integrations/supabase/types";
 
 export const registerBeneficiary = async (beneficiary: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">): Promise<Beneficiary> => {
+  // Ensure region_id is a valid UUID
+  if (!beneficiary.region_id || !isValidUUID(beneficiary.region_id)) {
+    throw new Error(`Invalid region ID: ${beneficiary.region_id}`);
+  }
+
   const { data, error } = await supabase
     .from("beneficiaries")
     .insert(beneficiary)

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,13 +27,12 @@ const RegisterBeneficiary = () => {
 
   const fetchBeneficiaries = async () => {
     try {
-      if (user?.region && typeof user.region === 'string') {
-        const regionId = user.region;
-        console.log("Fetching beneficiaries for region:", regionId);
-        const fetchedBeneficiaries = await fetchBeneficiariesByRegion(regionId);
+      if (user?.region_id && typeof user.region_id === 'string') {
+        console.log("Fetching beneficiaries for region ID:", user.region_id);
+        const fetchedBeneficiaries = await fetchBeneficiariesByRegion(user.region_id);
         setBeneficiaries(fetchedBeneficiaries);
       } else {
-        console.error("No valid region ID available:", user?.region);
+        console.error("No valid region_id available:", user?.region_id);
       }
     } catch (error) {
       console.error("Error fetching beneficiaries:", error);
@@ -45,24 +45,24 @@ const RegisterBeneficiary = () => {
   };
 
   useEffect(() => {
-    if (user?.region) {
+    if (user?.region_id) {
       fetchBeneficiaries();
     }
-  }, [user?.region]);
+  }, [user?.region_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      if (!user?.region || !user?.id) {
-        throw new Error("User region or ID not available");
+      if (!user?.region_id || !user?.id) {
+        throw new Error("User region_id or ID not available");
       }
 
       const newBeneficiary = {
         name: beneficiaryName,
         unique_identifiers: JSON.stringify(uniqueIdentifiers),
-        region_id: user.region,
+        region_id: user.region_id,
         registered_by: user.id,
         height: height,
         estimated_age: age
