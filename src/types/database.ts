@@ -56,6 +56,7 @@ export interface RegionalGoods {
   quantity: number;
   created_at: string;
   updated_at: string;
+  goods_types?: GoodsType;
 }
 
 export interface Allocation {
@@ -65,6 +66,8 @@ export interface Allocation {
   goods: Json;
   location: Json;
   allocated_at: string;
+  beneficiaries?: { name: string };
+  disbursers?: { name: string };
 }
 
 export interface FraudAlert {
@@ -74,6 +77,8 @@ export interface FraudAlert {
   location: Json;
   details?: string;
   attempted_at: string;
+  beneficiaries?: { name: string };
+  disbursers?: { name: string };
 }
 
 export interface LoginRequest {

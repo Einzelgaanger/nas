@@ -15,6 +15,9 @@ import Index from "./pages/Index";
 
 // Admin pages
 import ManageDisbursers from "./pages/admin/ManageDisbursers";
+import ManageBeneficiaries from "./pages/admin/ManageBeneficiaries";
+import ManageGoods from "./pages/admin/ManageGoods";
+import ManageAlerts from "./pages/admin/ManageAlerts";
 
 // Disburser pages
 import RegisterBeneficiary from "./pages/disburser/RegisterBeneficiary";
@@ -25,7 +28,8 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      retry: 1
+      retry: 1,
+      staleTime: 10000
     }
   }
 });
@@ -51,15 +55,16 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 
                 {/* Admin Routes */}
-                <Route path="/admin" element={<Navigate to="/admin/disbursers" replace />} />
+                <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="/admin/dashboard" element={<Dashboard />} />
                 <Route path="/admin/disbursers" element={<ManageDisbursers />} />
-                <Route path="/admin/beneficiaries" element={<Dashboard />} />
-                <Route path="/admin/resources" element={<Dashboard />} />
-                <Route path="/admin/goods" element={<Dashboard />} />
-                <Route path="/admin/alerts" element={<Dashboard />} />
+                <Route path="/admin/beneficiaries" element={<ManageBeneficiaries />} />
+                <Route path="/admin/goods" element={<ManageGoods />} />
+                <Route path="/admin/alerts" element={<ManageAlerts />} />
                 
                 {/* Disburser Routes */}
                 <Route path="/disburser" element={<Navigate to="/disburser/register" replace />} />
+                <Route path="/disburser/dashboard" element={<Dashboard />} />
                 <Route path="/disburser/register" element={<RegisterBeneficiary />} />
                 <Route path="/disburser/allocate" element={<AllocateResources />} />
               </Route>
