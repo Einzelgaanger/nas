@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Beneficiary, Allocation, FraudAlert, RegionalGoods, GoodsType } from "@/types/database";
 import { Database } from "@/integrations/supabase/types";
@@ -77,7 +76,7 @@ export const fetchRegionalGoods = async (regionId: string): Promise<RegionalGood
     .from("regional_goods")
     .select(`
       *,
-      goods_types:goods_type_id (name, description)
+      goods_types:goods_type_id (id, name, description, created_at)
     `)
     .eq("region_id", regionId);
 
