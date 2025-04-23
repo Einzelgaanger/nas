@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
+import * as React from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -59,7 +60,7 @@ const AllocateResources = () => {
   const [open, setOpen] = useState(false);
 
   const filteredBeneficiaries = useMemo(() => {
-    return beneficiaries.filter((beneficiary) =>
+    return beneficiaries.filter((beneficiary: Beneficiary) =>
       beneficiary.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       Object.values(beneficiary.unique_identifiers)
         .join(" ")
@@ -190,7 +191,7 @@ const AllocateResources = () => {
       
       // Update stock levels for each allocated item
       for (const goodsId of selectedGoods) {
-        const goodsItem = regionalGoods.find(g => g.id === goodsId);
+        const goodsItem = regionalGoods.find((g: { id: string }) => g.id === goodsId);
         if (goodsItem) {
           const newQuantity = Math.max(0, goodsItem.quantity - 1);
           await updateRegionalGoodsQuantity(goodsId, newQuantity);
@@ -222,7 +223,7 @@ const AllocateResources = () => {
   };
 
   const handleBeneficiarySelect = (value: string) => {
-    const selected = beneficiaries.find(b => b.id === value);
+    const selected = beneficiaries.find((b: Beneficiary) => b.id === value);
     if (selected) {
       setSelectedBeneficiary(selected);
     }
@@ -293,7 +294,7 @@ const AllocateResources = () => {
                         <SelectValue placeholder="Choose a beneficiary" />
                       </SelectTrigger>
                       <SelectContent>
-                        {beneficiaries.map((beneficiary) => (
+                        {beneficiaries.map((beneficiary: Beneficiary) => (
                           <SelectItem key={beneficiary.id} value={beneficiary.id}>
                             {beneficiary.name}
                           </SelectItem>
@@ -316,16 +317,16 @@ const AllocateResources = () => {
                   <div className="space-y-2">
                     <Label>Select Resources</Label>
                     <div className="space-y-2">
-                      {regionalGoods.map((good) => (
+                      {regionalGoods.map((good: { id: string; goods_types?: { name: string } }) => (
                         <div key={good.id} className="flex items-center space-x-2">
                           <Checkbox
                             id={good.id}
                             checked={selectedGoods.includes(good.id)}
-                            onCheckedChange={(checked) => {
+                            onCheckedChange={(checked: boolean) => {
                               if (checked) {
                                 setSelectedGoods([...selectedGoods, good.id]);
                               } else {
-                                setSelectedGoods(selectedGoods.filter((id) => id !== good.id));
+                                setSelectedGoods(selectedGoods.filter((id: string) => id !== good.id));
                               }
                             }}
                           />

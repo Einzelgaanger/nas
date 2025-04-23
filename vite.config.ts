@@ -12,9 +12,7 @@ export default defineConfig(({ mode }) => ({
     host: "0.0.0.0",
     port: parseInt(process.env.PORT || "8080"),
   },
-  plugins: [
-    react(),
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -27,12 +25,9 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
         },
       },
     },
-    commonjsOptions: {
-      include: []
-    }
   },
 }));
