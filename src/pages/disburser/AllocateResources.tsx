@@ -18,6 +18,8 @@ import {
   createFraudAlert,
   updateRegionalGoodsQuantity
 } from "@/services/disburserService";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface Beneficiary {
   id: string;
@@ -33,7 +35,7 @@ interface Beneficiary {
 
 const AllocateResources = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
   const [regionalGoods, setRegionalGoods] = useState<any[]>([]);
   const [selectedGoods, setSelectedGoods] = useState<string[]>([]);
@@ -44,6 +46,17 @@ const AllocateResources = () => {
   const [isFraudDetected, setIsFraudDetected] = useState(false);
   const { toast } = useToast();
   const { user } = useUserInfo();
+  const [open, setOpen] = useState(false);
+
+  const filteredBeneficiaries = useMemo(() => {
+    return beneficiaries.filter((beneficiary) =>
+      beneficiary.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      Object.values(beneficiary.unique_identifiers)
+        .join(" ")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    );
+  }, [beneficiaries, searchQuery]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -243,12 +256,47 @@ const AllocateResources = () => {
                 <>
                   <div className="space-y-3">
                     <Label htmlFor="beneficiary" className="text-lg font-medium">Select Beneficiary</Label>
-                    <Input
-                      type="text"
-                      placeholder="Search beneficiaries"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={open}
+                          className="w-full justify-between"
+                        >
+                          {selectedBeneficiary ? selectedBeneficiary.name : "Select beneficiary..."}
+                          <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput
+                            placeholder="Search beneficiaries..."
+                            value={searchQuery}
+                            onValueChange={setSearchQuery}
+                          />
+                          <CommandEmpty>No beneficiary found.</CommandEmpty>
+                          <CommandGroup className="max-h-60 overflow-y-auto">
+                            {filteredBeneficiaries.map((beneficiary) => (
+                              <CommandItem
+                                key={beneficiary.id}
+                                onSelect={() => {
+                                  setSelectedBeneficiary(beneficiary);
+                                  setOpen(false);
+                                }}
+                              >
+                                <div className="flex flex-col">
+                                  <span>{beneficiary.name}</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    ID: {Object.values(beneficiary.unique_identifiers)[0]}
+                                  </span>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   <div className="space-y-3">

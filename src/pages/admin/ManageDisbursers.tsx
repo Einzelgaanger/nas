@@ -400,7 +400,7 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
       </div>
       <div className="space-y-2">
         <Label htmlFor="region">Region</Label>
-        <Select onValueChange={setRegionId}>
+        <Select onValueChange={setRegionId} value={regionId}>
           <SelectTrigger>
             <SelectValue placeholder="Select a region" />
           </SelectTrigger>
@@ -414,11 +414,9 @@ const CreateDisburserForm: React.FC<CreateDisburserFormProps> = ({
         </Select>
       </div>
       <DialogFooter>
-        <DialogClose asChild>
-          <Button type="button" variant="secondary">
-            Cancel
-          </Button>
-        </DialogClose>
+        <Button type="button" variant="secondary" onClick={onClose}>
+          Cancel
+        </Button>
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Creating..." : "Create"}
         </Button>
