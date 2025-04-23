@@ -1,52 +1,87 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "@/hooks/useAuth";
 
-// Lazy load components for better performance
-const AdminDashboard = lazy(() => import('./components/admin/Dashboard'));
-const DisburserDashboard = lazy(() => import('./components/disburser/Dashboard'));
-const BeneficiaryRegistration = lazy(() => import('./components/admin/BeneficiaryRegistration'));
-const ManageAllocations = lazy(() => import('./components/admin/ManageAllocations'));
-const Alerts = lazy(() => import('./components/admin/Alerts'));
-const AllocateResources = lazy(() => import('./components/disburser/AllocateResources'));
+// Pages
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
 
-// Loading component
-const Loading = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-  </div>
-);
+// Admin pages
+import ManageDisbursers from "./pages/admin/ManageDisbursers";
+import ManageBeneficiaries from "./pages/admin/ManageBeneficiaries";
+import ManageGoods from "./pages/admin/ManageGoods";
+import ManageAlerts from "./pages/admin/ManageAlerts";
+import ManageAllocations from "./pages/admin/ManageAllocations";
+
+// Disburser pages
+import RegisterBeneficiary from "./pages/disburser/RegisterBeneficiary";
+import AllocateResources from "./pages/disburser/AllocateResources";
+
+// Layout
+import { AppLayout } from "./components/layout/AppLayout";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
+// Create a QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 10000
+    }
+  }
+});
 
 function App() {
   return (
-    <Router>
-      <Suspense fallback={<Loading />}>
-        <Routes>
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/beneficiaries" element={<BeneficiaryRegistration />} />
-          <Route path="/admin/allocations" element={<ManageAllocations />} />
-          <Route path="/admin/alerts" element={<Alerts />} />
-          
-          {/* Disburser Routes */}
-          <Route path="/disburser" element={<DisburserDashboard />} />
-          <Route path="/disburser/allocate" element={<AllocateResources />} />
-          
-          {/* Default route */}
-          <Route path="/" element={<Navigate to="/admin" replace />} />
-          
-          {/* 404 route */}
-          <Route path="*" element={
-            <div className="flex flex-col items-center justify-center min-h-screen">
-              <h1 className="text-2xl font-bold mb-4">404 - Page Not Found</h1>
-              <p className="text-muted-foreground mb-4">The page you're looking for doesn't exist.</p>
-              <a href="/" className="text-primary hover:underline">
-                Go back home
-              </a>
-            </div>
-          } />
-        </Routes>
-      </Suspense>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public route for login */}
+              <Route path="/" element={<Login />} />
+              
+              {/* Index route for routing based on auth status */}
+              <Route path="/index" element={<Index />} />
+              
+              {/* Protected Routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route element={<AppLayout />}>
+                  {/* Common Routes */}
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                  <Route path="/admin/dashboard" element={<Dashboard />} />
+                  <Route path="/admin/disbursers" element={<ManageDisbursers />} />
+                  <Route path="/admin/beneficiaries" element={<ManageBeneficiaries />} />
+                  <Route path="/admin/goods" element={<ManageGoods />} />
+                  <Route path="/admin/alerts" element={<ManageAlerts />} />
+                  <Route path="/admin/allocations" element={<ManageAllocations />} />
+                  
+                  {/* Disburser Routes */}
+                  <Route path="/disburser" element={<Navigate to="/disburser/register" replace />} />
+                  <Route path="/disburser/dashboard" element={<Dashboard />} />
+                  <Route path="/disburser/register" element={<RegisterBeneficiary />} />
+                  <Route path="/disburser/allocate" element={<AllocateResources />} />
+                </Route>
+              </Route>
+              
+              {/* Catch-all for 404s */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
