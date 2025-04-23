@@ -1,5 +1,4 @@
 import * as React from "react"
-import { useState } from "react"
 
 import type {
   ToastActionElement,
@@ -170,12 +169,6 @@ function toast({ ...props }: Toast) {
 }
 
 const useToast = () => {
-  const [open, setOpen] = useState<boolean>(false);
-  
-  const handleOpenChange = (open: boolean) => {
-    setOpen(open);
-  };
-  
   const [state, setState] = React.useState<State>(memoryState)
 
   React.useEffect(() => {
