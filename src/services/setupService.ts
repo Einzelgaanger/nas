@@ -59,7 +59,7 @@ export const performInitialSetup = async (): Promise<boolean> => {
     // Create default region
     const { data: regionData, error: regionError } = await supabase
       .from("regions")
-      .insert([{ name: "Default Region" }])
+      .insert([{ name: "Juba" }])
       .select();
       
     if (regionError) {

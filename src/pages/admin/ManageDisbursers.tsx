@@ -204,16 +204,27 @@ const ManageDisbursers = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 flex justify-between items-center">
         <h1 className="text-3xl font-bold">Manage Disbursers</h1>
-        <Button
-          onClick={() => {
-            setCurrentDisburser(null);
-            setIsCreating(true);
-          }}
-          className="bg-blue-500 hover:bg-blue-600"
-        >
-          <UserPlus className="mr-2 h-5 w-5" />
-          Add Disburser
-        </Button>
+        <Dialog open={isCreating} onOpenChange={setIsCreating}>
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Disburser
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add New Disburser</DialogTitle>
+              <DialogDescription>
+                Create a new disburser account.
+              </DialogDescription>
+            </DialogHeader>
+            <CreateDisburserForm
+              regions={regions || []}
+              onCreate={createDisburserMutation}
+              onClose={() => setIsCreating(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card className="mb-6">

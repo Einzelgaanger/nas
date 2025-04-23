@@ -300,6 +300,19 @@ const BeneficiaryCard = ({ beneficiary, getDisburserName }: {
     loadDisburserName();
   }, [beneficiary, getDisburserName]);
 
+  // Parse unique identifiers properly
+  const identifiers = useMemo(() => {
+    try {
+      if (typeof beneficiary.unique_identifiers === 'string') {
+        return JSON.parse(beneficiary.unique_identifiers);
+      }
+      return beneficiary.unique_identifiers;
+    } catch (error) {
+      console.error('Error parsing identifiers:', error);
+      return {};
+    }
+  }, [beneficiary.unique_identifiers]);
+
   return (
     <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardContent className="p-6">
@@ -310,10 +323,12 @@ const BeneficiaryCard = ({ beneficiary, getDisburserName }: {
                 {beneficiary.name}
               </h3>
               <div className="mt-1 space-y-1">
-                <div className="flex items-center text-sm text-gray-500">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Age: {beneficiary.estimated_age}
-                </div>
+                {beneficiary.estimated_age && (
+                  <div className="flex items-center text-sm text-gray-500">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Age: {beneficiary.estimated_age}
+                  </div>
+                )}
                 {beneficiary.height && (
                   <div className="flex items-center text-sm text-gray-500">
                     <Ruler className="h-4 w-4 mr-2" />
@@ -324,14 +339,14 @@ const BeneficiaryCard = ({ beneficiary, getDisburserName }: {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">Identifiers</h4>
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Identifiers</h4>
             <div className="space-y-1">
-              {Object.entries(beneficiary.unique_identifiers).map(([key, value]) => (
+              {Object.entries(identifiers).map(([key, value]) => (
                 value && (
-                  <div key={key} className="flex items-center text-sm text-gray-600">
-                    <FileText className="h-4 w-4 mr-2 text-blue-500" />
-                    {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}: {value}
+                  <div key={key} className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-sm mr-2 mb-2">
+                    <FileText className="h-4 w-4 mr-2" />
+                    {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}: {value}
                   </div>
                 )
               ))}

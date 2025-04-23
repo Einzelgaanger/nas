@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -115,6 +114,21 @@ const ManageAllocations = () => {
     return "Invalid location data";
   };
 
+  const formatGoodsDisplay = (goods: any) => {
+    try {
+      let parsedGoods = Array.isArray(goods) ? goods : JSON.parse(goods);
+      return parsedGoods.map((good: any) => {
+        if (typeof good === 'string') {
+          return good;
+        }
+        return good.name || good.type || 'Unknown Item';
+      });
+    } catch (error) {
+      console.error('Error parsing goods:', error);
+      return [];
+    }
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
@@ -217,7 +231,14 @@ const ManageAllocations = () => {
                         {allocation.disbursers?.name || "Unknown Disburser"}
                       </TableCell>
                       <TableCell>
-                        <AllocationGoods goods={allocation.goods} />
+                        <div className="flex flex-wrap gap-1">
+                          {formatGoodsDisplay(allocation.goods).map((good: string, index: number) => (
+                            <span key={index} className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs">
+                              <Package className="h-3 w-3 mr-1" />
+                              {good}
+                            </span>
+                          ))}
+                        </div>
                       </TableCell>
                       <TableCell className="text-gray-600">
                         {formatDate(allocation.allocated_at)}
