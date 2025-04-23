@@ -221,13 +221,18 @@ const AllocateResources = () => {
   };
 
   useEffect(() => {
-    if (selectedBeneficiary?.region_id) {
-      const fetchGoods = async () => {
-        const goods = await fetchRegionalGoods(selectedBeneficiary.region_id);
-        setRegionalGoods(goods);
-      };
-      fetchGoods();
-    }
+    const loadGoods = async () => {
+      if (selectedBeneficiary?.region_id) {
+        try {
+          const goods = await fetchRegionalGoods(selectedBeneficiary.region_id);
+          setRegionalGoods(goods);
+        } catch (error) {
+          console.error('Error fetching regional goods:', error);
+        }
+      }
+    };
+    
+    loadGoods();
   }, [selectedBeneficiary]);
 
   const StatusCard = () => {

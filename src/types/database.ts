@@ -33,7 +33,7 @@ export interface BeneficiaryIdentifiers {
   national_id?: string | null;
   passport?: string | null;
   birth_certificate?: string | null;
-  [key: string]: string | null | undefined;  // Allow for additional identifiers
+  [key: string]: string | null | undefined;
 }
 
 export interface Beneficiary {
@@ -42,7 +42,7 @@ export interface Beneficiary {
   region_id: string;
   region_name?: string;
   estimated_age: number | null;
-  height?: number | null;
+  height: number | null;
   id_number?: string;
   phone?: string;
   created_at: string;

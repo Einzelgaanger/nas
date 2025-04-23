@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { registerBeneficiary, fetchBeneficiariesByRegion } from "@/services/disburserService";
-import { Beneficiary } from "@/types/database";
+import { Beneficiary, BeneficiaryIdentifiers } from "@/types/database";
 import { List } from 'lucide-react';
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
@@ -15,8 +14,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const RegisterBeneficiary = () => {
   const [beneficiaryName, setBeneficiaryName] = useState("");
-  const [age, setAge] = useState<number | undefined>(undefined);
-  const [height, setHeight] = useState<number | undefined>(undefined);
+  const [age, setAge] = useState<number | null>(null);
+  const [height, setHeight] = useState<number | null>(null);
   const [uniqueIdentifiers, setUniqueIdentifiers] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -59,13 +58,19 @@ const RegisterBeneficiary = () => {
         throw new Error("User region_id or ID not available");
       }
 
-      const newBeneficiary = {
+      const identifiersObject: BeneficiaryIdentifiers = {};
+      uniqueIdentifiers.forEach((identifier, index) => {
+        identifiersObject[`identifier_${index + 1}`] = identifier || null;
+      });
+
+      const newBeneficiary: Omit<Beneficiary, "id" | "created_at" | "updated_at"> = {
         name: beneficiaryName,
-        unique_identifiers: JSON.stringify(uniqueIdentifiers),
+        unique_identifiers: identifiersObject,
         region_id: user.region_id,
         registered_by: user.id,
         height: height,
-        estimated_age: age
+        estimated_age: age,
+        region_name: undefined
       };
       
       console.log("Registering beneficiary with data:", newBeneficiary);
@@ -77,8 +82,8 @@ const RegisterBeneficiary = () => {
       });
       
       setBeneficiaryName("");
-      setAge(undefined);
-      setHeight(undefined);
+      setAge(null);
+      setHeight(null);
       setUniqueIdentifiers([]);
       
       fetchBeneficiaries();
@@ -123,8 +128,8 @@ const RegisterBeneficiary = () => {
                 type="number"
                 id="age"
                 placeholder="Enter estimated age"
-                value={age || ""}
-                onChange={(e) => setAge(e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                value={age ?? ""}
+                onChange={(e) => setAge(e.target.value ? parseInt(e.target.value, 10) : null)}
                 className="border-green-200 focus:border-green-400 bg-white"
               />
             </div>
@@ -134,8 +139,8 @@ const RegisterBeneficiary = () => {
                 type="number"
                 id="height"
                 placeholder="Enter height in cm"
-                value={height || ""}
-                onChange={(e) => setHeight(e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                value={height ?? ""}
+                onChange={(e) => setHeight(e.target.value ? parseInt(e.target.value, 10) : null)}
                 className="border-green-200 focus:border-green-400 bg-white"
               />
             </div>
