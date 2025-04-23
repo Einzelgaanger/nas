@@ -1,6 +1,5 @@
-
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export function DisburserSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useUserInfo();
   const { logout } = useAuth();
   
@@ -43,10 +43,16 @@ export function DisburserSidebar() {
     logout();
   };
 
+  const handleNavigation = (url: string) => {
+    navigate(url);
+  };
+
   return (
     <Sidebar className="border-r">
       <SidebarContent>
-        <SidebarTrigger className="h-16 border-b flex items-center justify-center" />
+        <SidebarTrigger className="h-16 border-b flex items-center justify-center">
+          <span className="text-xl font-bold text-secure-DEFAULT">SecureAid</span>
+        </SidebarTrigger>
         
         {user && (
           <div className="px-4 py-4 border-b">
@@ -63,16 +69,16 @@ export function DisburserSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link 
-                      to={item.url}
+                    <button 
+                      onClick={() => handleNavigation(item.url)}
                       className={cn(
-                        "flex items-center gap-3",
+                        "flex items-center gap-3 w-full text-left",
                         location.pathname === item.url ? "text-secure-DEFAULT font-medium" : ""
                       )}
                     >
                       <item.icon size={18} />
                       <span>{item.title}</span>
-                    </Link>
+                    </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

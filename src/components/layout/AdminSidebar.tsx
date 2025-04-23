@@ -1,6 +1,5 @@
-
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -25,12 +24,13 @@ import { useAuth } from "@/hooks/useAuth";
 
 export function AdminSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { logout } = useAuth();
   
   const menuItems = [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/admin/dashboard",
       icon: BarChart3,
     },
     {
@@ -64,10 +64,19 @@ export function AdminSidebar() {
     logout();
   };
 
+  const handleNavClick = (url: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(url);
+  };
+
   return (
     <Sidebar className="border-r bg-white">
       <SidebarContent>
-        <SidebarTrigger className="h-16 border-b flex items-center justify-center border-green-200" />
+        <SidebarTrigger className="h-16 border-b flex items-center justify-center border-green-200">
+          <div className="text-center">
+            <h1 className="font-bold text-green-700 text-xl">SecureAid</h1>
+          </div>
+        </SidebarTrigger>
         <SidebarGroup>
           <SidebarGroupLabel className="text-green-700">Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -75,16 +84,16 @@ export function AdminSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link 
-                      to={item.url}
+                    <button 
+                      onClick={handleNavClick(item.url)}
                       className={cn(
-                        "flex items-center gap-3",
+                        "flex items-center gap-3 w-full text-left",
                         location.pathname === item.url ? "text-green-600 font-medium" : "text-gray-700"
                       )}
                     >
                       <item.icon size={18} />
                       <span>{item.title}</span>
-                    </Link>
+                    </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

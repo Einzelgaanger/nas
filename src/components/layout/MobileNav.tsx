@@ -1,46 +1,49 @@
-
 import React from "react";
-import { Link } from "react-router-dom";
-import { Shield, UserPlus, Package, BarChart3, Users, UserCheck, AlertTriangle } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Home, Users, Package, Bell } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
-interface MobileNavProps {
-  role: string | null;
-}
+export function MobileNav() {
+  const { userRole } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-export function MobileNav({ role }: MobileNavProps) {
+  const adminLinks = [
+    { title: "Dashboard", url: "/admin/dashboard", icon: Home },
+    { title: "Disbursers", url: "/admin/disbursers", icon: Users },
+    { title: "Beneficiaries", url: "/admin/beneficiaries", icon: Users },
+    { title: "Alerts", url: "/admin/alerts", icon: Bell },
+  ];
+
+  const disburserLinks = [
+    { title: "Register", url: "/disburser/register", icon: Users },
+    { title: "Allocate", url: "/disburser/allocate", icon: Package },
+  ];
+
+  const links = userRole === "admin" ? adminLinks : disburserLinks;
+
+  const handleNavClick = (url: string) => {
+    navigate(url);
+  };
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 z-50 shadow-lg">
-      {role === "admin" ? (
-        <>
-          <Link to="/dashboard" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
-            <BarChart3 size={20} />
-            <span>Dashboard</span>
-          </Link>
-          <Link to="/admin/disbursers" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
-            <Users size={20} />
-            <span>Disbursers</span>
-          </Link>
-          <Link to="/admin/beneficiaries" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
-            <UserCheck size={20} />
-            <span>Beneficiaries</span>
-          </Link>
-          <Link to="/admin/alerts" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
-            <AlertTriangle size={20} />
-            <span>Alerts</span>
-          </Link>
-        </>
-      ) : (
-        <>
-          <Link to="/disburser/register" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
-            <UserPlus size={20} />
-            <span>Register</span>
-          </Link>
-          <Link to="/disburser/allocate" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
-            <Package size={20} />
-            <span>Allocate</span>
-          </Link>
-        </>
-      )}
+    <div className="md:hidden fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-gray-200 shadow-md">
+      <div className="grid h-full grid-cols-4 mx-auto">
+        {links.map((link) => (
+          <button
+            key={link.title}
+            className={cn(
+              "inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50",
+              location.pathname === link.url ? "text-green-600" : "text-gray-500"
+            )}
+            onClick={() => handleNavClick(link.url)}
+          >
+            <link.icon className="w-6 h-6 mb-1" />
+            <span className="text-xs">{link.title}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
