@@ -96,7 +96,8 @@ const ManageBeneficiaries = () => {
     const term = searchTerm.toLowerCase();
     const filtered = beneficiaries.filter(b => 
       b.name.toLowerCase().includes(term) || 
-      (b.region_name && b.region_name.toLowerCase().includes(term))
+      b.id_number?.toLowerCase().includes(term) || 
+      b.phone?.toLowerCase().includes(term)
     );
     setBeneficiaries(filtered);
   };

@@ -297,7 +297,7 @@ const AllocateResources = () => {
                       <h3 className="font-medium">Selected Beneficiary Details:</h3>
                       <div className="text-sm text-gray-600">
                         <p>Name: {selectedBeneficiary.name}</p>
-                        <p>ID: {selectedBeneficiary.unique_identifiers.national_id || 'Not provided'}</p>
+                        <p>ID: {selectedBeneficiary.id_number || 'Not provided'}</p>
                         <p>Phone: {selectedBeneficiary.phone || 'Not provided'}</p>
                       </div>
                     </div>
