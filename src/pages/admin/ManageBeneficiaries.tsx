@@ -87,9 +87,19 @@ const ManageBeneficiaries = () => {
     loadBeneficiaries();
   }, [selectedRegion, toast]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Filter is done client-side for now
+  const handleSearch = (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      setBeneficiaries(beneficiaries);
+      return;
+    }
+
+    const filtered = beneficiaries.filter(b => 
+      b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (b.unique_identifiers && Object.values(b.unique_identifiers).some(v => 
+        v?.toLowerCase().includes(searchTerm.toLowerCase())
+      ))
+    );
+    setBeneficiaries(filtered);
   };
 
   const handleRefresh = async () => {
@@ -137,6 +147,22 @@ const ManageBeneficiaries = () => {
 
   const handleEdit = (beneficiary: Beneficiary) => {
     setSelectedBeneficiary(beneficiary);
+  };
+
+  const renderIdentifiers = (identifiers: Beneficiary['unique_identifiers']) => {
+    if (!identifiers) return null;
+    
+    return (
+      <div className="space-y-1">
+        {Object.entries(identifiers).map(([key, value]) => 
+          value ? (
+            <div key={key} className="text-sm text-gray-600">
+              <span className="font-medium capitalize">{key.replace('_', ' ')}:</span> {value}
+            </div>
+          ) : null
+        )}
+      </div>
+    );
   };
 
   return (

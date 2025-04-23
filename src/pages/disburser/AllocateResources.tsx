@@ -34,10 +34,18 @@ interface Beneficiary {
   region_id: string;
 }
 
+interface LocalBeneficiary extends Beneficiary {
+  unique_identifiers: {
+    national_id?: string;
+    passport?: string;
+    birth_certificate?: string;
+  };
+}
+
 const AllocateResources = () => {
-  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+  const [beneficiaries, setBeneficiaries] = useState<LocalBeneficiary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
+  const [selectedBeneficiary, setSelectedBeneficiary] = useState<LocalBeneficiary | null>(null);
   const [regionalGoods, setRegionalGoods] = useState<any[]>([]);
   const [selectedGoods, setSelectedGoods] = useState<string[]>([]);
   const [location, setLocation] = useState<{ latitude: number | null; longitude: number | null } | null>(null);
@@ -59,17 +67,33 @@ const AllocateResources = () => {
     );
   }, [beneficiaries, searchQuery]);
 
+  const fetchData = async () => {
+    try {
+      const data = await fetchBeneficiariesByRegion(user.region_id);
+      // Cast the data to ensure it matches our local interface
+      setBeneficiaries(data.map(b => ({
+        ...b,
+        unique_identifiers: b.unique_identifiers || {
+          national_id: undefined,
+          passport: undefined,
+          birth_certificate: undefined
+        }
+      })));
+    } catch (error) {
+      console.error('Error fetching beneficiaries:', error);
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       try {
         if (user?.region_id) {
           const [fetchedBeneficiaries, fetchedGoods] = await Promise.all([
-            fetchBeneficiariesByRegion(user.region_id),
+            fetchData(),
             fetchRegionalGoods(user.region_id)
           ]);
           
-          setBeneficiaries(fetchedBeneficiaries);
           setRegionalGoods(fetchedGoods);
         }
       } catch (error) {

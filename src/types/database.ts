@@ -29,6 +29,12 @@ export interface Disburser {
   regions?: { name: string };
 }
 
+export interface BeneficiaryIdentifiers {
+  national_id?: string;
+  passport?: string;
+  birth_certificate?: string;
+}
+
 export interface Beneficiary {
   id: string;
   name: string;
@@ -38,13 +44,14 @@ export interface Beneficiary {
   phone?: string;
   created_at: string;
   region_name?: string;
-  unique_identifiers?: {
-    national_id?: string;
-    passport?: string;
-    birth_certificate?: string;
-  };
+  unique_identifiers?: BeneficiaryIdentifiers;
   registered_by?: string;
   height?: number;
+}
+
+// Add this type for use in components that require non-null unique_identifiers
+export interface BeneficiaryWithIdentifiers extends Beneficiary {
+  unique_identifiers: BeneficiaryIdentifiers;
 }
 
 export interface GoodsType {

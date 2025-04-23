@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Beneficiary, Allocation, FraudAlert, RegionalGoods, GoodsType } from "@/types/database";
+import { Beneficiary, Allocation, FraudAlert, RegionalGoods, GoodsType, BeneficiaryWithIdentifiers } from "@/types/database";
 import { Database } from "@/integrations/supabase/types";
 
 // Helper function to validate UUIDs
@@ -232,4 +232,24 @@ export const updateRegionalGoodsQuantity = async (goodsId: string, quantity: num
     console.error("Error updating regional goods quantity:", error);
     throw new Error(error.message);
   }
+};
+
+export const fetchBeneficiaries = async (): Promise<BeneficiaryWithIdentifiers[]> => {
+  const { data, error } = await supabase
+    .from('beneficiaries')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching beneficiaries:', error);
+    throw new Error(error.message);
+  }
+
+  return data.map(b => ({
+    ...b,
+    unique_identifiers: b.unique_identifiers || {
+      national_id: undefined,
+      passport: undefined,
+      birth_certificate: undefined
+    }
+  }));
 };
