@@ -94,12 +94,9 @@ const ManageBeneficiaries = () => {
     }
 
     const term = searchTerm.toLowerCase();
-    const filtered = beneficiaries.filter(b => {
-      const nameMatch = b.name.toLowerCase().includes(term);
-      const regionMatch = b.region_name?.toLowerCase().includes(term) || false;
-      const idMatch = b.id_number?.toLowerCase().includes(term) || false;
-      return nameMatch || regionMatch || idMatch;
-    });
+    const filtered = beneficiaries.filter(b => 
+      b.name.toLowerCase().includes(term)
+    );
     setBeneficiaries(filtered);
   };
 

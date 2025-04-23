@@ -39,7 +39,6 @@ export interface Beneficiary {
   id: string;
   name: string;
   region_id: string;
-  region_name: string;
   estimated_age: number | null;
   height: number | null;
   id_number?: string;
@@ -47,7 +46,7 @@ export interface Beneficiary {
   created_at: string;
   updated_at: string;
   registered_by: string;
-  unique_identifiers: any; // We'll keep this as any for now to fix the build
+  unique_identifiers: any;
 }
 
 // Add this type for use in components that require non-null unique_identifiers

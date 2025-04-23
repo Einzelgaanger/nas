@@ -11,7 +11,7 @@ import { useUserInfo } from "@/hooks/useUserInfo";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 import { CheckCircle, AlertCircle, Package, MapPin, Search, User } from "lucide-react";
 import { 
-  fetchBeneficiariesByRegion, 
+  fetchBeneficiaries, 
   fetchRegionalGoods,
   checkRecentAllocation,
   createAllocation,
@@ -43,13 +43,18 @@ interface LocalBeneficiary extends Beneficiary {
   };
 }
 
+interface Location {
+  latitude: number;
+  longitude: number;
+}
+
 const AllocateResources = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
   const [regionalGoods, setRegionalGoods] = useState<any[]>([]);
   const [selectedGoods, setSelectedGoods] = useState<string[]>([]);
-  const [location, setLocation] = useState<{ latitude: number | null; longitude: number | null } | null>(null);
+  const [location, setLocation] = useState<Location | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -322,13 +327,11 @@ const AllocateResources = () => {
                   <div className="space-y-2">
                     <Label>Location</Label>
                     <div className="text-sm text-gray-600">
-                      {location ? (
+                      {location && (
                         <span>
                           Latitude: {location.latitude.toFixed(6)},
                           Longitude: {location.longitude.toFixed(6)}
                         </span>
-                      ) : (
-                        <span>Waiting for location...</span>
                       )}
                     </div>
                   </div>
