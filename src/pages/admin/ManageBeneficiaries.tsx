@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, ReactNode } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -94,11 +94,12 @@ const ManageBeneficiaries = () => {
     }
 
     const term = searchTerm.toLowerCase();
-    const filtered = beneficiaries.filter(b => 
-      b.name.toLowerCase().includes(term) ||
-      b.id_number?.toLowerCase().includes(term) ||
-      b.phone?.toLowerCase().includes(term)
-    );
+    const filtered = beneficiaries.filter(b => {
+      const nameMatch = b.name.toLowerCase().includes(term);
+      const regionMatch = b.region_name?.toLowerCase().includes(term) || false;
+      const idMatch = b.id_number?.toLowerCase().includes(term) || false;
+      return nameMatch || regionMatch || idMatch;
+    });
     setBeneficiaries(filtered);
   };
 
@@ -163,6 +164,10 @@ const ManageBeneficiaries = () => {
         )}
       </div>
     );
+  };
+
+  const renderContent = (content: ReactNode) => {
+    return <div className="text-sm text-gray-600">{content}</div>;
   };
 
   return (

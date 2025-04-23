@@ -21,7 +21,7 @@ import {
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from '@/lib/auth';
 
 interface Beneficiary {
   id: string;
@@ -354,76 +354,4 @@ const AllocateResources = () => {
                               ? "bg-red-50 text-red-600" 
                               : "bg-green-50 text-green-600"
                           )}>
-                            {goods.quantity > 0 ? `Stock: ${goods.quantity}` : "Out of stock"}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div className="space-y-4">
-                    <Label className="text-lg font-semibold text-gray-700">Location</Label>
-                    {location ? (
-                      <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-200">
-                        <div className="flex items-start gap-3">
-                          <MapPin className="h-5 w-5 text-blue-500 mt-1" />
-                          <div>
-                            <p className="font-medium text-gray-700">Current Location</p>
-                            <p className="text-sm text-gray-500 mt-1">
-                              Latitude: {location.latitude?.toFixed(6)}
-                              <br />
-                              Longitude: {location.longitude?.toFixed(6)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={getLocation}
-                        className="w-full border-blue-200 hover:bg-blue-50"
-                      >
-                        <MapPin className="h-4 w-4 mr-2" />
-                        Get Location
-                      </Button>
-                    )}
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 text-lg shadow-md hover:shadow-lg"
-                    disabled={
-                      isLoading ||
-                      isSubmitting ||
-                      !selectedBeneficiary ||
-                      selectedGoods.length === 0 ||
-                      isSuccess
-                    }
-                  >
-                    {isSubmitting ? (
-                      <LoadingSpinner />
-                    ) : isSuccess ? (
-                      "Allocation Complete ✓"
-                    ) : (
-                      "Allocate Resources"
-                    )}
-                  </Button>
-                </form>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center">
-    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-  </div>
-);
-
-export default AllocateResources;
+                            {goods.quantity > 0 ? `
