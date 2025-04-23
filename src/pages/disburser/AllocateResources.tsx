@@ -235,15 +235,15 @@ const AllocateResources = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="relative min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {(isSuccess || isFraudDetected) && <StatusCard />}
           
-          <Card className="bg-white/95 backdrop-blur-sm border-blue-200 shadow-lg">
-            <CardHeader className="text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
+          <Card className="bg-white border-gray-200 shadow-lg">
+            <CardHeader className="text-center bg-gray-900 text-white rounded-t-lg">
               <CardTitle className="text-2xl font-bold">Allocate Resources</CardTitle>
-              <CardDescription className="text-white/90">Select a beneficiary and allocate resources</CardDescription>
+              <CardDescription className="text-gray-300">Select a beneficiary and allocate resources</CardDescription>
             </CardHeader>
             
             <CardContent className="p-6 space-y-8">
@@ -253,7 +253,7 @@ const AllocateResources = () => {
                 <form onSubmit={handleSubmit} className="space-y-8">
                   {/* Beneficiary Selection */}
                   <div className="space-y-4">
-                    <Label className="text-lg font-semibold text-gray-700">Select Beneficiary</Label>
+                    <Label className="text-lg font-semibold text-gray-900">Select Beneficiary</Label>
                     <Select 
                       onValueChange={(value) => {
                         const beneficiary = beneficiaries.find((b) => b.id === value);
@@ -261,7 +261,7 @@ const AllocateResources = () => {
                       }}
                       value={selectedBeneficiary?.id || ""}
                     >
-                      <SelectTrigger className="w-full border-blue-200 bg-white">
+                      <SelectTrigger className="w-full border-gray-200 bg-white">
                         <SelectValue placeholder="Choose a beneficiary" />
                       </SelectTrigger>
                       <SelectContent>
@@ -269,7 +269,7 @@ const AllocateResources = () => {
                           <SelectItem 
                             key={beneficiary.id} 
                             value={beneficiary.id}
-                            className="py-2 hover:bg-blue-50"
+                            className="py-2 hover:bg-gray-50"
                           >
                             <div className="flex items-center">
                               <User className="h-4 w-4 mr-2 text-blue-500" />
@@ -289,13 +289,13 @@ const AllocateResources = () => {
                   {/* Goods Selection */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label className="text-lg font-semibold text-gray-700">Select Goods</Label>
+                      <Label className="text-lg font-semibold text-gray-900">Select Goods</Label>
                       <span className="text-sm text-blue-600 font-medium">
                         Selected: {selectedGoods.length} item(s)
                       </span>
                     </div>
                     
-                    <div className="grid gap-3 bg-blue-50/50 rounded-lg p-4">
+                    <div className="grid gap-3 bg-gray-50 rounded-lg p-4">
                       {regionalGoods.map((goods) => (
                         <div
                           key={goods.id}
@@ -305,7 +305,7 @@ const AllocateResources = () => {
                             goods.quantity <= 0 && "opacity-50"
                           )}
                         >
-                          <div className="flex items-start space-x-3">
+                          <div className="flex items-center space-x-3">
                             <Checkbox
                               id={goods.id}
                               checked={selectedGoods.includes(goods.id)}
@@ -321,7 +321,7 @@ const AllocateResources = () => {
                             <div>
                               <Label
                                 htmlFor={goods.id}
-                                className="text-base font-medium cursor-pointer"
+                                className="text-base font-medium text-gray-900 cursor-pointer"
                               >
                                 {goods.goods_types?.name}
                               </Label>
@@ -376,11 +376,7 @@ const AllocateResources = () => {
 
                   <Button
                     type="submit"
-                    className={cn(
-                      "w-full bg-gradient-to-r from-blue-600 to-purple-600",
-                      "hover:from-blue-700 hover:to-purple-700 transition-all",
-                      "text-white font-bold py-4 text-lg shadow-md hover:shadow-lg"
-                    )}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 text-lg shadow-md hover:shadow-lg"
                     disabled={
                       isLoading ||
                       isSubmitting ||

@@ -161,11 +161,39 @@ export const createAllocation = async (allocation: Omit<Database["public"]["Tabl
   if (!isValidUUID(allocation.disburser_id)) {
     throw new Error(`Invalid disburser ID: ${allocation.disburser_id}`);
   }
+
+  // Get goods details before creating allocation
+  const goodsDetails = await Promise.all(
+    allocation.goods.map(async (goodId) => {
+      const { data, error } = await supabase
+        .from("regional_goods")
+        .select(`
+          *,
+          goods_types (id, name, description)
+        `)
+        .eq("id", goodId)
+        .single();
+
+      if (error) throw error;
+      return {
+        id: goodId,
+        name: data.goods_types.name,
+        description: data.goods_types.description
+      };
+    })
+  );
   
   const { data, error } = await supabase
     .from("allocations")
-    .insert(allocation)
-    .select()
+    .insert({
+      ...allocation,
+      goods: goodsDetails
+    })
+    .select(`
+      *,
+      beneficiaries:beneficiary_id (name),
+      disbursers:disburser_id (name)
+    `)
     .single();
 
   if (error) {

@@ -132,13 +132,13 @@ const ManageAllocations = () => {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <Card className="bg-white shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b border-green-100 p-4">
+      <Card className="bg-white shadow-lg border-gray-200">
+        <CardHeader className="border-b border-gray-200 p-4">
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-green-600" />
               <div>
-                <CardTitle className="text-xl font-bold text-gray-800">Allocation Records</CardTitle>
+                <CardTitle className="text-xl font-bold text-gray-900">Allocation Records</CardTitle>
                 <CardDescription className="text-gray-600">Track all resource allocations</CardDescription>
               </div>
             </div>
@@ -150,12 +150,12 @@ const ManageAllocations = () => {
                   placeholder="Search allocations..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-[250px] border-green-200 focus-visible:ring-green-500"
+                  className="pl-10 w-[250px] border-gray-200 focus-visible:ring-blue-500"
                 />
               </div>
               
               <Select value={filterBy} onValueChange={setFilterBy}>
-                <SelectTrigger className="w-[150px] border-green-200">
+                <SelectTrigger className="w-[150px] border-gray-200">
                   <SelectValue placeholder="Filter by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -172,18 +172,18 @@ const ManageAllocations = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="font-semibold">Beneficiary</TableHead>
-                <TableHead className="font-semibold">Disburser</TableHead>
-                <TableHead className="font-semibold">Resources</TableHead>
-                <TableHead className="font-semibold whitespace-nowrap">
+                <TableHead className="font-semibold text-gray-900">Beneficiary</TableHead>
+                <TableHead className="font-semibold text-gray-900">Disburser</TableHead>
+                <TableHead className="font-semibold text-gray-900">Resources</TableHead>
+                <TableHead className="font-semibold text-gray-900">
                   <div className="flex items-center gap-1">
-                    <Calendar size={16} className="text-green-600" />
+                    <Calendar size={16} className="text-blue-600" />
                     <span>Date & Time</span>
                   </div>
                 </TableHead>
-                <TableHead className="font-semibold">
+                <TableHead className="font-semibold text-gray-900">
                   <div className="flex items-center gap-1">
-                    <MapPin size={16} className="text-green-600" />
+                    <MapPin size={16} className="text-blue-600" />
                     <span>Location</span>
                   </div>
                 </TableHead>
@@ -205,13 +205,13 @@ const ManageAllocations = () => {
                   </TableCell>
                   <TableCell className="py-2">
                     <div className="flex flex-wrap gap-1">
-                      {allocation.goods_details?.map((item, index) => (
+                      {allocation.goods.map((item: any, index: number) => (
                         <span 
                           key={index}
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700"
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
                         >
                           <Package className="h-3 w-3 mr-1" />
-                          {item.goods_types.name}
+                          {item.name}
                         </span>
                       ))}
                     </div>
@@ -228,7 +228,7 @@ const ManageAllocations = () => {
           </Table>
         </div>
         
-        <CardFooter className="bg-gray-50 flex justify-between py-3 px-4 border-t">
+        <CardFooter className="bg-gray-50 flex justify-between py-3 px-4 border-t border-gray-200">
           <p className="text-gray-600 text-sm">
             {filteredAllocations.length} allocation{filteredAllocations.length !== 1 ? 's' : ''} found
           </p>
@@ -238,7 +238,7 @@ const ManageAllocations = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-white border-green-200 text-green-700 hover:bg-green-50"
+                className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
               >
                 Previous
               </Button>
@@ -246,7 +246,7 @@ const ManageAllocations = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-white border-green-200 text-green-700 hover:bg-green-50"
+                className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
               >
                 Next
               </Button>
