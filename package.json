@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "start": "npx serve -s dist",
+    "start": "npx serve -s dist --single",
     "preview": "vite preview"
   },
   "dependencies": {

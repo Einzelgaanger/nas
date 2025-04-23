@@ -48,7 +48,7 @@ function App() {
           <BrowserRouter>
             <Routes>
               {/* Public route for login */}
-              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Login />} />
               
               {/* Index route for routing based on auth status */}
               <Route path="/index" element={<Index />} />
