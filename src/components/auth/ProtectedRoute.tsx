@@ -1,4 +1,3 @@
-
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
@@ -24,7 +23,7 @@ const ProtectedRoute = () => {
     // Mark auth as checked after a short delay to ensure all state is properly loaded
     const timer = setTimeout(() => {
       setAuthChecked(true);
-    }, 50);
+    }, 100); // Increased delay to ensure state is properly loaded
     
     return () => clearTimeout(timer);
   }, [isAuthenticated, role, location]);

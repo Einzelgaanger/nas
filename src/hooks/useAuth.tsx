@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useUserRole } from "./useUserRole";
 import { useUserInfo, UserInfo } from "./useUserInfo";
@@ -15,7 +14,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem("isLoggedIn") === "true";
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const hasRole = !!localStorage.getItem("userRole");
+    const hasUserInfo = !!localStorage.getItem("userInfo");
+    return isLoggedIn && hasRole && hasUserInfo;
   });
   
   const { role, updateRole } = useUserRole();
