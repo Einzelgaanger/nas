@@ -37,6 +37,12 @@ interface Location {
   longitude: number;
 }
 
+interface DisburserUser {
+  id: string;
+  region_id: string;
+  name: string;
+}
+
 // Complete interface with all required properties
 interface BeneficiaryWithRegion {
   id: string;
@@ -85,10 +91,11 @@ const AllocateResources = () => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        if (user?.region_id) {
+        const disburserUser = user as DisburserUser;
+        if (disburserUser?.region_id) {
           const [fetchedBeneficiaries, fetchedGoods] = await Promise.all([
             fetchData(),
-            fetchRegionalGoods(user.region_id)
+            fetchRegionalGoods(disburserUser.region_id)
           ]);
           
           setRegionalGoods(fetchedGoods);
@@ -151,7 +158,8 @@ const AllocateResources = () => {
         throw new Error("Please select at least one aid item");
       }
       
-      if (!user?.id) {
+      const disburserUser = user as DisburserUser;
+      if (!disburserUser?.id) {
         throw new Error("User ID not available");
       }
       
@@ -162,7 +170,7 @@ const AllocateResources = () => {
         // Record fraud attempt
         await createFraudAlert({
           beneficiary_id: selectedBeneficiary.id,
-          disburser_id: user.id,
+          disburser_id: disburserUser.id,
           location: location ? { 
             latitude: location.latitude, 
             longitude: location.longitude
@@ -182,7 +190,7 @@ const AllocateResources = () => {
       // Process allocation
       await createAllocation({
         beneficiary_id: selectedBeneficiary.id,
-        disburser_id: user.id,
+        disburser_id: disburserUser.id,
         goods: selectedGoods,
         location: location ? {
           latitude: location.latitude,
