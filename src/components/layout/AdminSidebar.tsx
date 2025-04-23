@@ -45,7 +45,7 @@ export function AdminSidebar() {
     },
     {
       title: "Resource Allocation",
-      url: "/admin/resources",
+      url: "/admin/allocations",
       icon: Package,
     },
     {
@@ -65,11 +65,11 @@ export function AdminSidebar() {
   };
 
   return (
-    <Sidebar className="border-r">
+    <Sidebar className="border-r bg-white">
       <SidebarContent>
-        <SidebarTrigger className="h-16 border-b flex items-center justify-center" />
+        <SidebarTrigger className="h-16 border-b flex items-center justify-center border-green-200" />
         <SidebarGroup>
-          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-green-700">Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -79,7 +79,7 @@ export function AdminSidebar() {
                       to={item.url}
                       className={cn(
                         "flex items-center gap-3",
-                        location.pathname === item.url ? "text-secure-DEFAULT font-medium" : ""
+                        location.pathname === item.url ? "text-green-600 font-medium" : "text-gray-700"
                       )}
                     >
                       <item.icon size={18} />

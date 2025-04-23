@@ -5,6 +5,7 @@
 
 @layer base {
   :root {
+    /* New color scheme: black, white, blue, green (in order from dark to light) */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -12,25 +13,27 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
     
-    /* Vibrant secure colors */
-    --secure-default: 255 70 95;
-    --secure-light: 255 100 130;
-    --secure-accent: 255 130 160;
-    
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --primary: 142 76% 36%; /* Green */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 100% 45%; /* Blue */
+    --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 142 76% 96%;
+    --accent-foreground: 142 76% 36%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 142 76% 36%; /* Green */
     --radius: 0.5rem;
+    
+    /* Vibrant colors */
+    --vibrant-blue: 210 100% 50%;
+    --vibrant-green: 142 76% 36%;
+    --vibrant-yellow: 38 92% 50%;
+    --vibrant-red: 0 84.2% 60.2%;
+    --vibrant-purple: 262 83% 58%;
   }
 
   .dark {
@@ -40,40 +43,31 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 100% 45%;
+    --secondary-foreground: 0 0% 100%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 142 70% 20%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --ring: 142 76% 36%;
   }
 }
 
 @layer components {
-  /* Vibrant UI Elements */
-  .btn-vibrant {
-    @apply relative overflow-hidden transition-all duration-200 ease-in-out 
+  /* Clean Button Style */
+  .btn-clean {
+    @apply transition-all duration-200 ease-in-out 
     transform hover:scale-105 active:scale-95;
   }
   
-  .btn-vibrant:before {
-    @apply content-[''] absolute top-0 left-0 w-full h-full bg-white/20 
-    transform scale-x-0 origin-right transition-transform duration-500;
-  }
-  
-  .btn-vibrant:hover:before {
-    @apply transform scale-x-100 origin-left;
-  }
-  
   /* Card Styles */
-  .vibrant-card {
+  .clean-card {
     @apply bg-white rounded-xl shadow-md overflow-hidden 
     border border-gray-100 hover:shadow-lg transition-shadow duration-300;
   }
@@ -94,35 +88,9 @@
   .slide-in {
     animation: slideIn 0.5s ease-out forwards;
   }
-  
-  .slide-in.animation-delay-100 {
-    animation-delay: 0.1s;
-  }
-  
-  .slide-in.animation-delay-200 {
-    animation-delay: 0.2s;
-  }
-  
-  .slide-in.animation-delay-300 {
-    animation-delay: 0.3s;
-  }
-  
-  .floating-icon {
-    animation: float 6s ease-in-out infinite;
-    transform: translateY(0);
-  }
-  
-  /* Mobile UI */
-  .mobile-menu {
-    @apply bg-white border-t shadow-lg transition-transform duration-300;
-  }
-  
-  .mobile-menu-item {
-    @apply flex flex-col items-center justify-center p-2 text-xs text-secure-DEFAULT
-    hover:text-secure-accent transition-colors;
-  }
 }
 
+/* Animation keyframes */
 @keyframes float {
   0% {
     transform: translateY(0);
@@ -185,4 +153,15 @@
 /* Ensure mobile menu has enough space */
 .pb-mobile-menu {
   padding-bottom: 70px;
+}
+
+#root {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+body {
+  min-height: 100vh;
+  background-color: #f9fafb;
 }
