@@ -38,7 +38,11 @@ export interface Beneficiary {
   phone?: string;
   created_at: string;
   region_name?: string;
-  unique_identifiers?: string[];
+  unique_identifiers?: {
+    national_id?: string;
+    passport?: string;
+    birth_certificate?: string;
+  };
   registered_by?: string;
   height?: number;
 }

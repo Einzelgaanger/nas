@@ -131,21 +131,8 @@ const ManageBeneficiaries = () => {
     }
   };
 
-  const createDisburser = async (disburser: TablesInsert<"disbursers">) => {
-    try {
-      const { data, error } = await supabase
-        .from("disbursers")
-        .insert(disburser)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error("Error creating disburser:", error);
-      throw new Error(
-        error instanceof Error ? error.message : "Failed to create disburser"
-      );
-    }
+  const createBeneficiary = async (data: Omit<Beneficiary, 'id' | 'created_at'>) => {
+    // ... implementation
   };
 
   const handleEdit = (beneficiary: Beneficiary) => {
@@ -271,17 +258,17 @@ const BeneficiaryCard = ({ beneficiary, getDisburserName }: {
   }, [beneficiary, getDisburserName]);
 
   // Parse unique identifiers properly
-  const identifiers = useMemo(() => {
-    try {
-      if (typeof beneficiary.unique_identifiers === 'string') {
-        return JSON.parse(beneficiary.unique_identifiers);
-      }
-      return beneficiary.unique_identifiers;
-    } catch (error) {
-      console.error('Error parsing identifiers:', error);
-      return {};
-    }
-  }, [beneficiary.unique_identifiers]);
+  const renderIdentifiers = (identifiers: Beneficiary['unique_identifiers']) => {
+    if (!identifiers) return null;
+    
+    return Object.entries(identifiers).map(([key, value]) => 
+      value ? (
+        <div key={key} className="text-sm">
+          <span className="font-medium">{key}:</span> {value}
+        </div>
+      ) : null
+    );
+  };
 
   // Add type checking for height
   const renderHeight = (beneficiary: Beneficiary) => {
@@ -318,14 +305,7 @@ const BeneficiaryCard = ({ beneficiary, getDisburserName }: {
           <div>
             <h4 className="text-sm font-medium text-gray-700 mb-2">Identifiers</h4>
             <div className="space-y-1">
-              {Object.entries(identifiers).map(([key, value]) => (
-                value && (
-                  <div key={key} className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-sm mr-2 mb-2">
-                    <FileText className="h-4 w-4 mr-2" />
-                    {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}: {value}
-                  </div>
-                )
-              ))}
+              {renderIdentifiers(beneficiary.unique_identifiers)}
             </div>
           </div>
 
