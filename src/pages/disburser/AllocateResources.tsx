@@ -50,8 +50,7 @@ interface BeneficiaryWithRegion {
 const AllocateResources = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  // Use the new interface to ensure region_id is available
-  const [selectedBeneficiary, setSelectedBeneficiary] = useState<BeneficiaryWithRegion | null>(null);
+  const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
   const [regionalGoods, setRegionalGoods] = useState<any[]>([]);
   const [selectedGoods, setSelectedGoods] = useState<string[]>([]);
   const [location, setLocation] = useState<Location | null>(null);
@@ -224,25 +223,16 @@ const AllocateResources = () => {
     }
   };
 
-  // Explicitly cast to the type with region_id
   const handleBeneficiarySelect = (value: string) => {
     const selected = beneficiaries.find((b: Beneficiary) => b.id === value);
     if (selected) {
-      setSelectedBeneficiary({
-        id: selected.id,
-        name: selected.name,
-        region_id: selected.region_id,
-        id_number: selected.id_number,
-        phone: selected.phone,
-        unique_identifiers: selected.unique_identifiers
-      });
+      setSelectedBeneficiary(selected);
     }
   };
 
-  // Explicitly check for region_id
   useEffect(() => {
     const loadGoods = async () => {
-      if (selectedBeneficiary && selectedBeneficiary.region_id) {
+      if (selectedBeneficiary?.region_id) {
         try {
           const goods = await fetchRegionalGoods(selectedBeneficiary.region_id);
           setRegionalGoods(goods);
