@@ -37,11 +37,6 @@ interface Location {
   longitude: number;
 }
 
-interface SelectedBeneficiaryType extends Beneficiary {
-  id: string;
-  region_id: string;
-}
-
 interface BeneficiarySelection {
   id: string;
   region_id: string;
@@ -229,6 +224,12 @@ const AllocateResources = () => {
       setSelectedBeneficiary(selected);
     }
   };
+
+  useEffect(() => {
+    if (selectedBeneficiary) {
+      const regionGoods = fetchRegionalGoods(selectedBeneficiary.region_id);
+    }
+  }, [selectedBeneficiary]);
 
   const StatusCard = () => {
     if (isSuccess) {
