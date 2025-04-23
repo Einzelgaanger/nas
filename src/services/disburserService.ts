@@ -234,7 +234,7 @@ export const updateRegionalGoodsQuantity = async (goodsId: string, quantity: num
   }
 };
 
-export const fetchBeneficiaries = async (): Promise<BeneficiaryWithIdentifiers[]> => {
+export const fetchBeneficiaries = async (): Promise<Beneficiary[]> => {
   const { data, error } = await supabase
     .from('beneficiaries')
     .select('*');
@@ -244,12 +244,5 @@ export const fetchBeneficiaries = async (): Promise<BeneficiaryWithIdentifiers[]
     throw new Error(error.message);
   }
 
-  return data.map(b => ({
-    ...b,
-    unique_identifiers: b.unique_identifiers || {
-      national_id: undefined,
-      passport: undefined,
-      birth_certificate: undefined
-    }
-  }));
+  return data || [];
 };

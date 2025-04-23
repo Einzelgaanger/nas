@@ -88,16 +88,16 @@ const ManageBeneficiaries = () => {
   }, [selectedRegion, toast]);
 
   const handleSearch = (searchTerm: string) => {
-    if (!searchTerm.trim()) {
+    if (!searchTerm) {
       setBeneficiaries(beneficiaries);
       return;
     }
 
+    const term = searchTerm.toLowerCase();
     const filtered = beneficiaries.filter(b => 
-      b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (b.unique_identifiers && Object.values(b.unique_identifiers).some(v => 
-        v?.toLowerCase().includes(searchTerm.toLowerCase())
-      ))
+      b.name.toLowerCase().includes(term) ||
+      b.id_number?.toLowerCase().includes(term) ||
+      b.phone?.toLowerCase().includes(term)
     );
     setBeneficiaries(filtered);
   };

@@ -21,6 +21,7 @@ import {
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Beneficiary {
   id: string;
@@ -43,9 +44,9 @@ interface LocalBeneficiary extends Beneficiary {
 }
 
 const AllocateResources = () => {
-  const [beneficiaries, setBeneficiaries] = useState<LocalBeneficiary[]>([]);
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBeneficiary, setSelectedBeneficiary] = useState<LocalBeneficiary | null>(null);
+  const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
   const [regionalGoods, setRegionalGoods] = useState<any[]>([]);
   const [selectedGoods, setSelectedGoods] = useState<string[]>([]);
   const [location, setLocation] = useState<{ latitude: number | null; longitude: number | null } | null>(null);
@@ -54,7 +55,7 @@ const AllocateResources = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isFraudDetected, setIsFraudDetected] = useState(false);
   const { toast } = useToast();
-  const { user } = useUserInfo();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
 
   const filteredBeneficiaries = useMemo(() => {
@@ -69,16 +70,8 @@ const AllocateResources = () => {
 
   const fetchData = async () => {
     try {
-      const data = await fetchBeneficiariesByRegion(user.region_id);
-      // Cast the data to ensure it matches our local interface
-      setBeneficiaries(data.map(b => ({
-        ...b,
-        unique_identifiers: b.unique_identifiers || {
-          national_id: undefined,
-          passport: undefined,
-          birth_certificate: undefined
-        }
-      })));
+      const data = await fetchBeneficiaries();
+      setBeneficiaries(data || []);
     } catch (error) {
       console.error('Error fetching beneficiaries:', error);
     }
