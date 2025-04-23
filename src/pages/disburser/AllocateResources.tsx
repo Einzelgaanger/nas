@@ -1,15 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
-import { useUserInfo } from "@/hooks/useUserInfo";
-import { AnimatedIcons } from "@/components/ui/animated-icons";
-import { CheckCircle, AlertCircle, Package, MapPin, Search, User } from "lucide-react";
+import { useAuth } from '@/lib/auth';
+import type { Beneficiary } from '@/types/database';
 import { 
   fetchBeneficiaries, 
   fetchRegionalGoods,
@@ -18,19 +14,7 @@ import {
   createFraudAlert,
   updateRegionalGoodsQuantity
 } from "@/services/disburserService";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useAuth } from '@/lib/auth';
-import type { Beneficiary } from '@/types/database';
-
-interface LocalBeneficiary extends Beneficiary {
-  unique_identifiers: {
-    national_id?: string;
-    passport?: string;
-    birth_certificate?: string;
-  };
-}
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Location {
   latitude: number;
@@ -43,19 +27,8 @@ interface DisburserUser {
   name: string;
 }
 
-// Complete interface with all required properties
-interface BeneficiaryWithRegion {
-  id: string;
-  name: string;
-  region_id: string;
-  id_number?: string;
-  phone?: string;
-  unique_identifiers?: any;
-}
-
-const AllocateResources: React.FC = () => {
+const AllocateResources = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
   const [regionalGoods, setRegionalGoods] = useState<any[]>([]);
   const [selectedGoods, setSelectedGoods] = useState<string[]>([]);
@@ -66,17 +39,6 @@ const AllocateResources: React.FC = () => {
   const [isFraudDetected, setIsFraudDetected] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
-
-  const filteredBeneficiaries = useMemo(() => {
-    return beneficiaries.filter((beneficiary: Beneficiary) =>
-      beneficiary.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      Object.values(beneficiary.unique_identifiers)
-        .join(" ")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase())
-    );
-  }, [beneficiaries, searchQuery]);
 
   const fetchData = async () => {
     try {
@@ -252,38 +214,6 @@ const AllocateResources: React.FC = () => {
     
     loadGoods();
   }, [selectedBeneficiary]);
-
-  const StatusCard: React.FC = () => {
-    if (isSuccess) {
-      return (
-        <Card className="border-green-300 bg-green-50 mb-6">
-          <CardContent className="p-6 flex items-center">
-            <CheckCircle className="h-8 w-8 text-green-600 mr-4" />
-            <div>
-              <h3 className="font-semibold text-green-800">Allocation Successful</h3>
-              <p className="text-sm text-green-700">Resources successfully allocated to {selectedBeneficiary?.name}</p>
-            </div>
-          </CardContent>
-        </Card>
-      );
-    }
-    
-    if (isFraudDetected) {
-      return (
-        <Card className="border-red-300 bg-red-50 mb-6">
-          <CardContent className="p-6 flex items-center">
-            <AlertCircle className="h-8 w-8 text-red-600 mr-4" />
-            <div>
-              <h3 className="font-semibold text-red-800">Fraud Alert</h3>
-              <p className="text-sm text-red-700">This beneficiary has already received an allocation recently.</p>
-            </div>
-          </CardContent>
-        </Card>
-      );
-    }
-    
-    return null;
-  };
 
   return (
     <div className="container mx-auto py-6">
