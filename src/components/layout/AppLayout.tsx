@@ -23,19 +23,19 @@ export function AppLayout() {
   return (
     <SidebarProvider>
       <AnimatedIcons />
-      <div className="min-h-screen flex w-full overflow-hidden bg-gray-50">
+      <div className="min-h-screen flex w-full overflow-hidden bg-white">
         {!isMobile && (role === "admin" ? <AdminSidebar /> : <DisburserSidebar />)}
         
         <div className="flex-1 flex flex-col">
           <header className="h-16 border-b flex items-center justify-between px-4 bg-white shadow-sm z-10">
-            <h1 className="text-xl font-bold flex items-center gap-2 text-secure-DEFAULT">
-              <Shield size={24} className="text-secure-light animate-pulse" />
-              <span className="bg-gradient-to-r from-secure-DEFAULT to-secure-accent bg-clip-text text-transparent">
+            <h1 className="text-xl font-bold flex items-center gap-2 text-green-700">
+              <Shield size={24} className="text-green-600" />
+              <span className="text-green-700">
                 SecureAid Network
               </span>
             </h1>
             <div className="flex items-center gap-4">
-              <Avatar className="h-8 w-8 bg-secure-light text-white">
+              <Avatar className="h-8 w-8 bg-blue-600 text-white">
                 <AvatarFallback>{userInitial}</AvatarFallback>
               </Avatar>
             </div>

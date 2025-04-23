@@ -62,27 +62,54 @@ const ManageAllocations = () => {
       (allocation.beneficiaries?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (allocation.disbursers?.name || "").toLowerCase().includes(searchTerm.toLowerCase());
     
-    // Apply additional filtering if needed
-    if (filterBy !== "all") {
-      // This could be extended to filter by date range, region, etc.
-      return matchesSearch;
+    if (filterBy === "recent") {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return matchesSearch && new Date(allocation.allocated_at) >= sevenDaysAgo;
+    } else if (filterBy === "month") {
+      const firstDayOfMonth = new Date();
+      firstDayOfMonth.setDate(1);
+      firstDayOfMonth.setHours(0, 0, 0, 0);
+      return matchesSearch && new Date(allocation.allocated_at) >= firstDayOfMonth;
     }
     
     return matchesSearch;
   });
 
   const getGoodsList = (goods: any) => {
-    if (Array.isArray(goods)) {
-      return `${goods.length} item(s)`;
+    if (!goods) return "No items";
+    
+    try {
+      if (typeof goods === 'string') {
+        goods = JSON.parse(goods);
+      }
+      
+      if (Array.isArray(goods)) {
+        return `${goods.length} item(s)`;
+      } else if (typeof goods === 'object') {
+        const itemCount = Object.keys(goods).length;
+        return `${itemCount} item(s)`;
+      }
+    } catch (error) {
+      console.error("Error parsing goods data:", error);
     }
-    return "No items";
+    
+    return "Invalid goods data";
   };
 
   const getLocationString = (location: any) => {
     if (!location) return "Not specified";
     
-    if (location.latitude && location.longitude) {
-      return `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
+    try {
+      if (typeof location === 'string') {
+        location = JSON.parse(location);
+      }
+      
+      if (location.latitude && location.longitude) {
+        return `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
+      }
+    } catch (error) {
+      console.error("Error parsing location data:", error);
     }
     
     return "Invalid location data";
@@ -92,25 +119,25 @@ const ManageAllocations = () => {
     <div className="container mx-auto py-8 px-4">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Resource Allocations</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-green-700">Resource Allocations</h1>
+          <p className="text-gray-600 mt-1">
             Monitor and manage all resource allocations across regions
           </p>
         </div>
         
         <div className="flex gap-2 mt-4 lg:mt-0">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" className="flex items-center gap-2 border-green-500 text-green-700">
             <Filter size={16} />
             <span>Advanced Filters</span>
           </Button>
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" className="flex items-center gap-2 border-green-500 text-green-700">
             <Download size={16} />
             <span>Export</span>
           </Button>
         </div>
       </div>
 
-      <Card className="shadow-md border-green-100">
+      <Card className="shadow-md border-green-200">
         <CardHeader className="bg-white border-b border-green-100">
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div className="flex items-center gap-2 text-gray-900">
@@ -122,18 +149,18 @@ const ManageAllocations = () => {
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <Input 
-                  placeholder="Search allocations..." 
+                  placeholder="Search by beneficiary or disburser" 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-blue-100 focus:border-blue-300"
+                  className="pl-10 border-green-200 focus-visible:ring-green-500"
                 />
               </div>
               
               <Select value={filterBy} onValueChange={setFilterBy}>
-                <SelectTrigger className="w-full md:w-40 border-blue-100">
+                <SelectTrigger className="w-full md:w-40 border-green-200">
                   <SelectValue placeholder="Filter by" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Allocations</SelectItem>
                   <SelectItem value="recent">Recent (7 days)</SelectItem>
                   <SelectItem value="month">This Month</SelectItem>
@@ -162,19 +189,19 @@ const ManageAllocations = () => {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50">
+                  <TableRow className="bg-green-50">
                     <TableHead>Beneficiary</TableHead>
                     <TableHead>Disburser</TableHead>
                     <TableHead>Resources</TableHead>
                     <TableHead>
                       <div className="flex items-center gap-1">
-                        <Calendar size={16} className="text-blue-500" />
+                        <Calendar size={16} className="text-blue-600" />
                         <span>Date & Time</span>
                       </div>
                     </TableHead>
                     <TableHead>
                       <div className="flex items-center gap-1">
-                        <MapPin size={16} className="text-blue-500" />
+                        <MapPin size={16} className="text-blue-600" />
                         <span>Location</span>
                       </div>
                     </TableHead>
@@ -190,9 +217,7 @@ const ManageAllocations = () => {
                         {allocation.disbursers?.name || "Unknown Disburser"}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200">
-                          {getGoodsList(allocation.goods)}
-                        </Badge>
+                        <AllocationGoods goods={allocation.goods} />
                       </TableCell>
                       <TableCell className="text-gray-600">
                         {formatDate(allocation.allocated_at)}
@@ -208,16 +233,71 @@ const ManageAllocations = () => {
           )}
         </CardContent>
         
-        <CardFooter className="bg-gray-50 flex justify-between py-3 px-6">
-          <p className="text-gray-500 text-sm">
+        <CardFooter className="bg-green-50 flex justify-between py-3 px-6">
+          <p className="text-gray-600 text-sm">
             {filteredAllocations.length} allocation{filteredAllocations.length !== 1 ? 's' : ''} found
           </p>
           
           <div className="flex gap-2">
-            {/* Pagination could be added here if needed */}
+            {filteredAllocations.length > 10 && (
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-white border-green-200 text-green-700"
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-gray-600">Page 1</span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-white border-green-200 text-green-700"
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </div>
         </CardFooter>
       </Card>
+    </div>
+  );
+};
+
+// Component to display allocation goods
+const AllocationGoods = ({ goods }: { goods: any }) => {
+  let parsedGoods: any[] = [];
+  
+  try {
+    if (typeof goods === 'string') {
+      parsedGoods = JSON.parse(goods);
+    } else if (Array.isArray(goods)) {
+      parsedGoods = goods;
+    } else if (goods && typeof goods === 'object') {
+      parsedGoods = Object.values(goods);
+    }
+  } catch (error) {
+    console.error("Error parsing goods data:", error);
+    return <Badge variant="outline" className="bg-gray-100 text-gray-600">No items</Badge>;
+  }
+  
+  if (!parsedGoods || parsedGoods.length === 0) {
+    return <Badge variant="outline" className="bg-gray-100 text-gray-600">No items</Badge>;
+  }
+  
+  return (
+    <div className="flex flex-wrap gap-1">
+      {parsedGoods.slice(0, 3).map((item, index) => (
+        <Badge key={index} variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+          {typeof item === 'object' ? item.name || 'Unknown item' : item}
+        </Badge>
+      ))}
+      {parsedGoods.length > 3 && (
+        <Badge variant="outline" className="bg-gray-100 text-gray-600">
+          +{parsedGoods.length - 3} more
+        </Badge>
+      )}
     </div>
   );
 };
