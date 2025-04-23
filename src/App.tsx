@@ -25,7 +25,7 @@ import AllocateResources from "./pages/disburser/AllocateResources";
 // Layout
 import { AppLayout } from "./components/layout/AppLayout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import { AdminLayout } from "./components/layout/AdminLayout";
+import AdminLayout from './components/layout/AdminLayout';
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -48,7 +48,7 @@ function App() {
           <BrowserRouter>
             <Routes>
               {/* Public route for login */}
-              <Route path="/" element={<Login />} />
+              <Route path="/login" element={<Login />} />
               
               {/* Index route for routing based on auth status */}
               <Route path="/index" element={<Index />} />
