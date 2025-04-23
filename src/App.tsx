@@ -25,6 +25,7 @@ import AllocateResources from "./pages/disburser/AllocateResources";
 // Layout
 import { AppLayout } from "./components/layout/AppLayout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { AdminLayout } from "./components/layout/AdminLayout";
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -59,13 +60,15 @@ function App() {
                   <Route path="/dashboard" element={<Dashboard />} />
                   
                   {/* Admin Routes */}
-                  <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-                  <Route path="/admin/dashboard" element={<Dashboard />} />
-                  <Route path="/admin/disbursers" element={<ManageDisbursers />} />
-                  <Route path="/admin/beneficiaries" element={<ManageBeneficiaries />} />
-                  <Route path="/admin/goods" element={<ManageGoods />} />
-                  <Route path="/admin/alerts" element={<ManageAlerts />} />
-                  <Route path="/admin/allocations" element={<ManageAllocations />} />
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="disbursers" element={<ManageDisbursers />} />
+                    <Route path="beneficiaries" element={<ManageBeneficiaries />} />
+                    <Route path="goods" element={<ManageGoods />} />
+                    <Route path="alerts" element={<ManageAlerts />} />
+                    <Route path="allocations" element={<ManageAllocations />} />
+                  </Route>
                   
                   {/* Disburser Routes */}
                   <Route path="/disburser" element={<Navigate to="/disburser/register" replace />} />

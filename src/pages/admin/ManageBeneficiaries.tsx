@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, RefreshCw, User, MapPin, Calendar, Ruler, FileText } from "lucide-react";
+import { Search, RefreshCw, User, MapPin, Calendar, Ruler, FileText, Pencil } from "lucide-react";
 import { fetchBeneficiariesByRegion } from "@/services/disburserService";
 import { fetchRegions } from "@/services/adminService";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,9 @@ interface Beneficiary {
   region_id: string;
   registered_by: string;
   created_at: string;
+  region_name?: string;
+  id_number?: string;
+  phone?: string;
 }
 
 const ManageBeneficiaries = () => {
@@ -33,6 +36,7 @@ const ManageBeneficiaries = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
 
   // Enhanced search functionality
   const filteredBeneficiaries = useMemo(() => {
@@ -161,94 +165,105 @@ const ManageBeneficiaries = () => {
     }
   };
 
+  const handleEdit = (beneficiary: Beneficiary) => {
+    setSelectedBeneficiary(beneficiary);
+  };
+
   return (
-    <div className="container mx-auto p-4 max-w-7xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Beneficiaries</h1>
-        <p className="text-gray-500 mt-1">View and manage registered beneficiaries</p>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-12">
-        {/* Left side - Filters */}
-        <div className="md:col-span-4 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Filters</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Region</Label>
-                <Select value={selectedRegion || ""} onValueChange={setSelectedRegion}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select region" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {regions.map(region => (
-                      <SelectItem key={region.id} value={region.id}>
-                        {region.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <Input
-                  placeholder="Search beneficiaries..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={isLoading}
+    <div className="container mx-auto py-6">
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
+        {/* Sidebar */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-4 border-b">
+            <h2 className="text-lg font-semibold">Beneficiaries</h2>
+            <div className="mt-2">
+              <Input 
+                placeholder="Search beneficiaries..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full"
+              />
+            </div>
+          </div>
+          <div className="divide-y max-h-[calc(100vh-200px)] overflow-y-auto">
+            {filteredBeneficiaries.map((beneficiary) => (
+              <div 
+                key={beneficiary.id}
+                className={`p-4 cursor-pointer hover:bg-gray-50 ${
+                  selectedBeneficiary?.id === beneficiary.id ? 'bg-gray-50' : ''
+                }`}
+                onClick={() => setSelectedBeneficiary(beneficiary)}
               >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-                Refresh
-              </Button>
-            </CardContent>
-          </Card>
+                <div className="flex items-center space-x-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <User className="h-5 w-5 text-blue-600" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {beneficiary.name}
+                    </p>
+                    <p className="text-sm text-gray-500 truncate">
+                      {beneficiary.region_name || 'No region'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Right side - Beneficiaries List */}
-        <div className="md:col-span-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Beneficiary List</CardTitle>
-              <CardDescription>
-                {filteredBeneficiaries.length} beneficiaries found
-                {selectedRegion && regions.find(r => r.id === selectedRegion) && (
-                  <> in {regions.find(r => r.id === selectedRegion)?.name}</>
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                {isLoading ? (
-                  <div className="flex justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-                  </div>
-                ) : filteredBeneficiaries.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    No beneficiaries found
-                  </div>
-                ) : (
-                  filteredBeneficiaries.map((beneficiary) => (
-                    <BeneficiaryCard
-                      key={beneficiary.id}
-                      beneficiary={beneficiary}
-                      getDisburserName={getDisburserName}
-                    />
-                  ))
-                )}
+        {/* Main Content */}
+        <div className="bg-white rounded-lg shadow">
+          {selectedBeneficiary ? (
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold">{selectedBeneficiary.name}</h2>
+                  <p className="text-gray-500">{selectedBeneficiary.region_name}</p>
+                </div>
+                <Button variant="outline" onClick={() => handleEdit(selectedBeneficiary)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+
+              <div className="grid gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Allocations</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Recent allocations list */}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Details</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">ID Number</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{selectedBeneficiary.id_number}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Phone</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{selectedBeneficiary.phone}</dd>
+                      </div>
+                      {/* Add more details as needed */}
+                    </dl>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          ) : (
+            <div className="h-full flex items-center justify-center text-gray-500">
+              Select a beneficiary to view details
+            </div>
+          )}
         </div>
       </div>
     </div>

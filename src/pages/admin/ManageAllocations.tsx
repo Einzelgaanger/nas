@@ -75,25 +75,28 @@ const ManageAllocations = () => {
     return matchesSearch;
   });
 
-  const getGoodsList = (goods: any) => {
-    if (!goods) return "No items";
-    
+  const formatGoodsList = (goods: any[]) => {
     try {
-      if (typeof goods === 'string') {
-        goods = JSON.parse(goods);
-      }
+      const parsedGoods = typeof goods === 'string' ? JSON.parse(goods) : goods;
+      if (!Array.isArray(parsedGoods)) return 'No items';
       
-      if (Array.isArray(goods)) {
-        return `${goods.length} item(s)`;
-      } else if (typeof goods === 'object') {
-        const itemCount = Object.keys(goods).length;
-        return `${itemCount} item(s)`;
-      }
+      return (
+        <div className="flex flex-wrap gap-1">
+          {parsedGoods.map((item, index) => (
+            <span 
+              key={index}
+              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
+            >
+              <Package className="h-3 w-3 mr-1" />
+              {item.name || item}
+            </span>
+          ))}
+        </div>
+      );
     } catch (error) {
-      console.error("Error parsing goods data:", error);
+      console.error('Error parsing goods:', error);
+      return 'Invalid goods data';
     }
-    
-    return "Invalid goods data";
   };
 
   const getLocationString = (location: any) => {
@@ -204,17 +207,7 @@ const ManageAllocations = () => {
                     {allocation.disbursers?.name || "Unknown"}
                   </TableCell>
                   <TableCell className="py-2">
-                    <div className="flex flex-wrap gap-1">
-                      {allocation.goods.map((item: any, index: number) => (
-                        <span 
-                          key={index}
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
-                        >
-                          <Package className="h-3 w-3 mr-1" />
-                          {item.name}
-                        </span>
-                      ))}
-                    </div>
+                    {formatGoodsList(allocation.goods)}
                   </TableCell>
                   <TableCell className="py-2 whitespace-nowrap text-gray-600">
                     {formatDate(allocation.allocated_at)}
