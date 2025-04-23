@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +8,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Shield, Users, UserCheck, AlertCircle } from "lucide-react";
+import { Shield, Users, UserCheck, AlertCircle, User, Key, LogIn } from "lucide-react";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ensureInitialSetup } from "@/services/setupService";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 const Login = () => {
   const [role, setRole] = useState<"admin" | "disburser">("admin");
@@ -192,147 +193,98 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 px-4 overflow-hidden">
-      <AnimatedIcons />
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
+      <AnimatedIcons className="opacity-10" />
       
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: "1s"}}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-green-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{animationDelay: "2s"}}></div>
-      </div>
-      
-      <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-2 border-white shadow-xl fade-in">
+      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-xl border-blue-200">
         <CardHeader className="text-center space-y-2">
-          <div className="flex justify-center mb-4">
-            <Shield size={40} className="text-secure-DEFAULT float" />
+          <div className="mx-auto w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
+            <Shield className="h-6 w-6 text-white" />
           </div>
-          <CardTitle className="text-2xl bg-gradient-to-r from-secure-DEFAULT to-secure-accent bg-clip-text text-transparent">Secure Aid Distribution System</CardTitle>
-          <CardDescription className="text-gray-600">Please sign in to continue</CardDescription>
-          
-          {isSettingUp && (
-            <div className="flex items-center justify-center space-x-2 mt-4 text-sm text-gray-500">
-              <div className="animate-spin h-4 w-4 border-2 border-secure-DEFAULT border-t-transparent rounded-full"></div>
-              <span>Setting up default accounts...</span>
-            </div>
-          )}
-          
-          {setupError && (
-            <div className="flex items-center justify-center mt-4 p-3 bg-red-50 text-red-700 rounded-lg border border-red-200">
-              <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-              <p className="text-sm">{setupError}</p>
-            </div>
-          )}
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+            SecureAid Network
+          </CardTitle>
+          <CardDescription className="text-gray-500">
+            Sign in to access the platform
+          </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-6">
-            <div className="space-y-2 slide-in animation-delay-100">
-              <Label htmlFor="role" className="text-gray-700">Select Role</Label>
-              <RadioGroup
-                id="role"
-                defaultValue="admin"
-                className="flex justify-around p-2 bg-gray-100 rounded-lg"
-                value={role}
-                onValueChange={(value) => setRole(value as "admin" | "disburser")}
-              >
-                <div className={`flex items-center space-x-2 p-2 rounded-lg transition-colors ${role === "admin" ? "bg-white shadow-md" : ""}`}>
-                  <RadioGroupItem value="admin" id="admin" />
-                  <Label htmlFor="admin" className="flex items-center gap-2 cursor-pointer">
-                    <Users size={18} className={role === "admin" ? "text-secure-DEFAULT" : "text-gray-500"} />
-                    Administrator
-                  </Label>
-                </div>
-                <div className={`flex items-center space-x-2 p-2 rounded-lg transition-colors ${role === "disburser" ? "bg-white shadow-md" : ""}`}>
-                  <RadioGroupItem value="disburser" id="disburser" />
-                  <Label htmlFor="disburser" className="flex items-center gap-2 cursor-pointer">
-                    <UserCheck size={18} className={role === "disburser" ? "text-secure-DEFAULT" : "text-gray-500"} />
-                    Disburser
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
+        
+        <CardContent className="space-y-6">
+          <Tabs defaultValue="admin" onValueChange={(value) => setRole(value as "admin" | "disburser")}>
+            <TabsList className="grid grid-cols-2 w-full">
+              <TabsTrigger value="admin" className="data-[state=active]:bg-green-50">
+                Administrator
+              </TabsTrigger>
+              <TabsTrigger value="disburser" className="data-[state=active]:bg-blue-50">
+                Disburser
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-            <div className="space-y-2 slide-in animation-delay-200">
-              <Label htmlFor="identifier" className="text-gray-700">
-                {role === "admin" ? "Username" : "Phone Number"}
-              </Label>
-              <Input
-                id="identifier"
-                placeholder={role === "admin" ? "Enter username" : "Enter phone number"}
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                required
-                className="border-gray-300 focus:border-secure-DEFAULT focus:ring focus:ring-secure-light focus:ring-opacity-50"
-              />
-            </div>
-
-            <div className="space-y-2 slide-in animation-delay-300">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-gray-700">Password</Label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="identifier">Username</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Input
+                  id="identifier"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  className="pl-10"
+                  required
+                />
               </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-gray-300 focus:border-secure-DEFAULT focus:ring focus:ring-secure-light focus:ring-opacity-50"
-              />
-              {role === "admin" && (
-                <p className="text-xs text-gray-500 mt-2">
-                  Default admin: username "admin", password "NGO123"
-                </p>
-              )}
-              {role === "disburser" && (
-                <p className="text-xs text-gray-500 mt-2">
-                  Sample disburser: phone "1234567890", password "pass123"
-                </p>
-              )}
             </div>
-            <div className="text-right">
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowDebug(!showDebug)} 
-                className="text-xs text-gray-500"
-              >
-                {showDebug ? "Hide Debug" : "Show Debug"}
-              </Button>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
             </div>
-          </CardContent>
-          <CardFooter className="flex-col">
-            <Button type="submit" className="w-full btn-vibrant bg-gradient-to-r from-secure-DEFAULT to-secure-accent text-white hover:shadow-lg" disabled={isLoading || isSettingUp}>
+
+            <Button
+              type="submit"
+              className={cn(
+                "w-full h-11",
+                role === "admin" 
+                  ? "bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
+                  : "bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
+              )}
+              disabled={isLoading}
+            >
               {isLoading ? (
                 <div className="flex items-center">
-                  <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                  <span>Signing in...</span>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  Signing in...
                 </div>
               ) : (
-                "Sign In"
+                <div className="flex items-center">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign In
+                </div>
               )}
             </Button>
-          </CardFooter>
-        </form>
+          </form>
+        </CardContent>
+        
+        <CardFooter className="justify-center pt-0">
+          <p className="text-sm text-gray-500">
+            Secure humanitarian aid distribution platform
+          </p>
+        </CardFooter>
       </Card>
-
-      <Dialog open={showDebug} onOpenChange={setShowDebug}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-auto">
-          <DialogHeader>
-            <DialogTitle>Debug Information</DialogTitle>
-            <DialogDescription>
-              This dialog shows detailed information about login attempts and setup processes.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="bg-gray-100 p-4 rounded text-sm font-mono">
-            <pre className="whitespace-pre-wrap">
-              {debugInfo.length > 0 ? 
-                debugInfo.map((log, i) => <div key={i}>{log}</div>) : 
-                "No debug information available yet."}
-            </pre>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

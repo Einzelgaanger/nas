@@ -20,6 +20,7 @@ import {
 } from "@/services/disburserService";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Beneficiary {
   id: string;
@@ -253,52 +254,36 @@ const AllocateResources = () => {
                   {/* Beneficiary Selection */}
                   <div className="space-y-4">
                     <Label className="text-lg font-semibold text-gray-700">Select Beneficiary</Label>
-                    <Popover open={open} onOpenChange={setOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={open}
-                          className="w-full justify-between border-blue-200 hover:bg-blue-50"
-                        >
-                          {selectedBeneficiary ? (
+                    <Select 
+                      onValueChange={(value) => {
+                        const beneficiary = beneficiaries.find((b) => b.id === value);
+                        setSelectedBeneficiary(beneficiary || null);
+                      }}
+                      value={selectedBeneficiary?.id || ""}
+                    >
+                      <SelectTrigger className="w-full border-blue-200 bg-white">
+                        <SelectValue placeholder="Choose a beneficiary" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {beneficiaries.map((beneficiary) => (
+                          <SelectItem 
+                            key={beneficiary.id} 
+                            value={beneficiary.id}
+                            className="py-2 hover:bg-blue-50"
+                          >
                             <div className="flex items-center">
                               <User className="h-4 w-4 mr-2 text-blue-500" />
-                              <span>{selectedBeneficiary.name}</span>
-                            </div>
-                          ) : (
-                            <span className="text-gray-500">Select beneficiary...</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search beneficiaries..." />
-                          <CommandEmpty>No beneficiaries found.</CommandEmpty>
-                          <CommandGroup className="max-h-64 overflow-auto">
-                            {beneficiaries.map((beneficiary) => (
-                              <CommandItem
-                                key={beneficiary.id}
-                                value={beneficiary.id}
-                                onSelect={() => {
-                                  setSelectedBeneficiary(beneficiary);
-                                  setOpen(false);
-                                }}
-                                className="flex items-center p-2 hover:bg-blue-50"
-                              >
-                                <User className="h-4 w-4 mr-2 text-blue-500" />
-                                <div>
-                                  <p className="font-medium">{beneficiary.name}</p>
-                                  <p className="text-xs text-gray-500">
-                                    ID: {beneficiary.unique_identifiers.national_id || 'N/A'}
-                                  </p>
+                              <div>
+                                <div className="font-medium">{beneficiary.name}</div>
+                                <div className="text-xs text-gray-500">
+                                  ID: {beneficiary.unique_identifiers.national_id || 'N/A'}
                                 </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Goods Selection */}

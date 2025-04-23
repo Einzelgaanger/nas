@@ -131,53 +131,36 @@ const ManageAllocations = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-green-700">Resource Allocations</h1>
-          <p className="text-gray-600 mt-1">
-            Monitor and manage all resource allocations across regions
-          </p>
-        </div>
-        
-        <div className="flex gap-2 mt-4 lg:mt-0">
-          <Button variant="outline" className="flex items-center gap-2 border-green-500 text-green-700">
-            <Filter size={16} />
-            <span>Advanced Filters</span>
-          </Button>
-          <Button variant="outline" className="flex items-center gap-2 border-green-500 text-green-700">
-            <Download size={16} />
-            <span>Export</span>
-          </Button>
-        </div>
-      </div>
-
+    <div className="container mx-auto py-6 px-4">
       <Card className="bg-white shadow-lg">
-        <CardHeader className="bg-white border-b border-green-100">
+        <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b border-green-100 p-4">
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-            <div className="flex items-center gap-2 text-gray-900">
+            <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-green-600" />
-              <CardTitle>Allocation Records</CardTitle>
+              <div>
+                <CardTitle className="text-xl font-bold text-gray-800">Allocation Records</CardTitle>
+                <CardDescription className="text-gray-600">Track all resource allocations</CardDescription>
+              </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <div className="relative w-full md:w-64">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <Input 
-                  placeholder="Search by beneficiary or disburser" 
+                  placeholder="Search allocations..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-green-200 focus-visible:ring-green-500"
+                  className="pl-10 w-[250px] border-green-200 focus-visible:ring-green-500"
                 />
               </div>
               
               <Select value={filterBy} onValueChange={setFilterBy}>
-                <SelectTrigger className="w-full md:w-40 border-green-200">
+                <SelectTrigger className="w-[150px] border-green-200">
                   <SelectValue placeholder="Filter by" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                <SelectContent>
                   <SelectItem value="all">All Allocations</SelectItem>
-                  <SelectItem value="recent">Recent (7 days)</SelectItem>
+                  <SelectItem value="recent">Last 7 days</SelectItem>
                   <SelectItem value="month">This Month</SelectItem>
                 </SelectContent>
               </Select>
@@ -185,105 +168,90 @@ const ManageAllocations = () => {
           </div>
         </CardHeader>
         
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="flex justify-center items-center p-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-            </div>
-          ) : error ? (
-            <div className="text-center p-12 text-red-500">
-              An error occurred while fetching allocations
-            </div>
-          ) : filteredAllocations.length === 0 ? (
-            <div className="text-center p-12 text-gray-500">
-              {searchTerm || filterBy !== "all" 
-                ? "No allocations match your search criteria" 
-                : "No allocations have been recorded yet"}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-green-50">
-                    <TableHead className="font-semibold">Beneficiary</TableHead>
-                    <TableHead className="font-semibold">Disburser</TableHead>
-                    <TableHead className="font-semibold">Resources</TableHead>
-                    <TableHead className="font-semibold">
-                      <div className="flex items-center gap-1">
-                        <Calendar size={16} className="text-green-600" />
-                        <span>Date & Time</span>
-                      </div>
-                    </TableHead>
-                    <TableHead className="font-semibold">
-                      <div className="flex items-center gap-1">
-                        <MapPin size={16} className="text-green-600" />
-                        <span>Location</span>
-                      </div>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAllocations.map((allocation: Allocation) => (
-                    <TableRow key={allocation.id} className="hover:bg-green-50/50">
-                      <TableCell className="font-medium">
-                        {allocation.beneficiaries?.name || "Unknown"}
-                      </TableCell>
-                      <TableCell>
-                        {allocation.disbursers?.name || "Unknown"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {formatGoodsDisplay(allocation.goods).map((good: string, index: number) => (
-                            <span 
-                              key={index} 
-                              className="inline-flex items-center bg-green-50 text-green-700 rounded-full px-2 py-1 text-xs"
-                            >
-                              <Package className="h-3 w-3 mr-1" />
-                              {good}
-                            </span>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-gray-600 whitespace-nowrap">
-                        {formatDate(allocation.allocated_at)}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {getLocationString(allocation.location)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="font-semibold">Beneficiary</TableHead>
+                <TableHead className="font-semibold">Disburser</TableHead>
+                <TableHead className="font-semibold">Resources</TableHead>
+                <TableHead className="font-semibold whitespace-nowrap">
+                  <div className="flex items-center gap-1">
+                    <Calendar size={16} className="text-green-600" />
+                    <span>Date & Time</span>
+                  </div>
+                </TableHead>
+                <TableHead className="font-semibold">
+                  <div className="flex items-center gap-1">
+                    <MapPin size={16} className="text-green-600" />
+                    <span>Location</span>
+                  </div>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredAllocations.map((allocation) => (
+                <TableRow 
+                  key={allocation.id} 
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <TableCell className="py-2">
+                    <div className="font-medium text-gray-900">
+                      {allocation.beneficiaries?.name || "Unknown"}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2 text-gray-600">
+                    {allocation.disbursers?.name || "Unknown"}
+                  </TableCell>
+                  <TableCell className="py-2">
+                    <div className="flex flex-wrap gap-1">
+                      {allocation.goods_details?.map((item, index) => (
+                        <span 
+                          key={index}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700"
+                        >
+                          <Package className="h-3 w-3 mr-1" />
+                          {item.goods_types.name}
+                        </span>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2 whitespace-nowrap text-gray-600">
+                    {formatDate(allocation.allocated_at)}
+                  </TableCell>
+                  <TableCell className="py-2 text-gray-600">
+                    {getLocationString(allocation.location)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
         
-        <CardFooter className="bg-green-50 flex justify-between py-3 px-6">
+        <CardFooter className="bg-gray-50 flex justify-between py-3 px-4 border-t">
           <p className="text-gray-600 text-sm">
             {filteredAllocations.length} allocation{filteredAllocations.length !== 1 ? 's' : ''} found
           </p>
           
-          <div className="flex gap-2">
-            {filteredAllocations.length > 10 && (
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-white border-green-200 text-green-700 hover:bg-green-50"
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-gray-600">Page 1</span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-white border-green-200 text-green-700 hover:bg-green-50"
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </div>
+          {filteredAllocations.length > 10 && (
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-white border-green-200 text-green-700 hover:bg-green-50"
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-gray-600">Page 1</span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-white border-green-200 text-green-700 hover:bg-green-50"
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </CardFooter>
       </Card>
     </div>

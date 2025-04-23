@@ -101,20 +101,19 @@ export const fetchGoodsTypes = async (): Promise<GoodsType[]> => {
   return data || [];
 };
 
-export const checkRecentAllocation = async (beneficiaryId: string, timeWindowMinutes = 5): Promise<boolean> => {
+export const checkRecentAllocation = async (beneficiaryId: string): Promise<boolean> => {
   if (!isValidUUID(beneficiaryId)) {
     throw new Error(`Invalid beneficiary ID: ${beneficiaryId}`);
   }
-  
-  // Calculate time threshold (now - X minutes)
-  const threshold = new Date();
-  threshold.setMinutes(threshold.getMinutes() - timeWindowMinutes);
-  
+
+  const fiveMinutesAgo = new Date();
+  fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+
   const { data, error } = await supabase
     .from("allocations")
-    .select("id")
+    .select("allocated_at")
     .eq("beneficiary_id", beneficiaryId)
-    .gt("allocated_at", threshold.toISOString())
+    .gte("allocated_at", fiveMinutesAgo.toISOString())
     .limit(1);
 
   if (error) {
@@ -122,7 +121,6 @@ export const checkRecentAllocation = async (beneficiaryId: string, timeWindowMin
     throw new Error(error.message);
   }
 
-  // If data exists and has length > 0, there was a recent allocation
   return data && data.length > 0;
 };
 
@@ -132,7 +130,10 @@ export const fetchAllocations = async (beneficiaryId?: string): Promise<Allocati
     .select(`
       *,
       beneficiaries:beneficiary_id (name),
-      disbursers:disburser_id (name)
+      disbursers:disburser_id (name),
+      goods_details:goods (
+        goods_types (name, description)
+      )
     `);
 
   if (beneficiaryId) {
