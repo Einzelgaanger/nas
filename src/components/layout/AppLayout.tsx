@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Outlet } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -45,7 +44,7 @@ export function AppLayout() {
             <Outlet />
           </main>
           
-          {isMobile && <MobileNav role={role} />}
+          {isMobile && <MobileNav />}
         </div>
       </div>
     </SidebarProvider>

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
 export function MobileNav() {
-  const { userRole } = useAuth();
+  const { role } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -21,7 +21,7 @@ export function MobileNav() {
     { title: "Allocate", url: "/disburser/allocate", icon: Package },
   ];
 
-  const links = userRole === "admin" ? adminLinks : disburserLinks;
+  const links = role === "admin" ? adminLinks : disburserLinks;
 
   const handleNavClick = (url: string) => {
     navigate(url);
