@@ -1,23 +1,54 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, RefreshCw, User, MapPin } from "lucide-react";
+import { Search, RefreshCw, User, MapPin, Calendar, Ruler, FileText } from "lucide-react";
 import { fetchBeneficiariesByRegion } from "@/services/disburserService";
 import { fetchRegions } from "@/services/adminService";
 import { supabase } from "@/integrations/supabase/client";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 
+interface Beneficiary {
+  id: string;
+  name: string;
+  estimated_age: number;
+  height: number;
+  unique_identifiers: {
+    national_id?: string;
+    passport?: string;
+    birth_certificate?: string;
+  };
+  region_id: string;
+  registered_by: string;
+  created_at: string;
+}
+
 const ManageBeneficiaries = () => {
-  const [beneficiaries, setBeneficiaries] = useState<any[]>([]);
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [regions, setRegions] = useState<any[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  // Enhanced search functionality
+  const filteredBeneficiaries = useMemo(() => {
+    if (!searchTerm) return beneficiaries;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return beneficiaries.filter(b => {
+      // Search in name
+      if (b.name.toLowerCase().includes(searchLower)) return true;
+      
+      // Search in identifiers
+      const identifiers = b.unique_identifiers;
+      return Object.values(identifiers).some(value => 
+        value?.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [beneficiaries, searchTerm]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,108 +143,150 @@ const ManageBeneficiaries = () => {
     }
   };
 
-  // Filter beneficiaries based on search term
-  const filteredBeneficiaries = searchTerm
-    ? beneficiaries.filter(b => 
-        b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (b.unique_identifiers && String(b.unique_identifiers).toLowerCase().includes(searchTerm.toLowerCase()))
-      )
-    : beneficiaries;
+  const createDisburser = async (disburser: TablesInsert<"disbursers">) => {
+    try {
+      const { data, error } = await supabase
+        .from("disbursers")
+        .insert(disburser)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error creating disburser:", error);
+      throw new Error(
+        error instanceof Error ? error.message : "Failed to create disburser"
+      );
+    }
+  };
 
   return (
-    <div className="px-4 py-6 space-y-6">
-      <AnimatedIcons className="opacity-20" />
-      
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Beneficiaries</h1>
-        <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
-      </div>
-      
-      <div className="grid gap-6 md:grid-cols-[250px_1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Filters</CardTitle>
-            <CardDescription>Filter beneficiaries by region</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Region</label>
-              <Select
-                value={selectedRegion || ""}
-                onValueChange={setSelectedRegion}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select region" />
-                </SelectTrigger>
-                <SelectContent>
-                  {regions.map(region => (
-                    <SelectItem key={region.id} value={region.id}>
-                      {region.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <form onSubmit={handleSearch} className="relative">
-              <Input
-                placeholder="Search beneficiaries..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-8"
-              />
-              <Search className="absolute right-2 top-2.5 h-4 w-4 text-gray-400" />
-            </form>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Beneficiaries</h1>
+            <p className="text-gray-500 mt-1">Manage and view registered beneficiaries</p>
+          </div>
+          <Button 
+            onClick={handleRefresh} 
+            disabled={isLoading}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Beneficiary List</CardTitle>
-            <CardDescription>
-              Showing {filteredBeneficiaries.length} beneficiaries
-              {selectedRegion && regions.find(r => r.id === selectedRegion) && (
-                <> in {regions.find(r => r.id === selectedRegion).name}</>
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="grid gap-6 md:grid-cols-[300px_1fr]">
+          <div className="space-y-6">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle>Filters</CardTitle>
+                <CardDescription>Refine your search</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Region
+                  </label>
+                  <Select
+                    value={selectedRegion || ""}
+                    onValueChange={setSelectedRegion}
+                  >
+                    <SelectTrigger className="w-full border-gray-300">
+                      <SelectValue placeholder="Select region" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {regions.map(region => (
+                        <SelectItem key={region.id} value={region.id}>
+                          {region.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Search
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Search by name or ID..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 border-gray-300"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg bg-blue-50 border-blue-100">
+              <CardContent className="p-4">
+                <div className="text-sm text-blue-600">
+                  <p className="font-medium">Total Beneficiaries: {filteredBeneficiaries.length}</p>
+                  {selectedRegion && regions.find(r => r.id === selectedRegion) && (
+                    <p className="mt-1">
+                      Region: {regions.find(r => r.id === selectedRegion).name}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-6">
             {isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} className="border-0 shadow-lg animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-4" />
+                      <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
+                      <div className="h-4 bg-gray-200 rounded w-2/3" />
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             ) : filteredBeneficiaries.length > 0 ? (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredBeneficiaries.map((beneficiary) => (
                   <BeneficiaryCard 
                     key={beneficiary.id} 
-                    beneficiary={beneficiary} 
+                    beneficiary={beneficiary}
                     getDisburserName={getDisburserName}
                   />
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-                <User className="h-16 w-16 text-gray-300 mb-4" />
-                <p className="text-center">No beneficiaries found.</p>
-                {selectedRegion ? (
-                  <p className="text-center text-sm mt-2">No beneficiaries are registered in this region.</p>
-                ) : (
-                  <p className="text-center text-sm mt-2">Please select a region to view beneficiaries.</p>
-                )}
-              </div>
+              <Card className="border-0 shadow-lg">
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <User className="h-16 w-16 text-gray-300 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">
+                    No beneficiaries found
+                  </h3>
+                  <p className="text-gray-500 text-center max-w-sm">
+                    {selectedRegion 
+                      ? "No beneficiaries are registered in this region."
+                      : "Please select a region to view beneficiaries."}
+                  </p>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-const BeneficiaryCard = ({ beneficiary, getDisburserName }: { beneficiary: any, getDisburserName: (id: string) => Promise<string> }) => {
+const BeneficiaryCard = ({ beneficiary, getDisburserName }: { 
+  beneficiary: Beneficiary;
+  getDisburserName: (id: string) => Promise<string>;
+}) => {
   const [disburserName, setDisburserName] = useState<string | null>(null);
   
   useEffect(() => {
@@ -226,51 +299,58 @@ const BeneficiaryCard = ({ beneficiary, getDisburserName }: { beneficiary: any, 
     
     loadDisburserName();
   }, [beneficiary, getDisburserName]);
-  
-  // Parse unique identifiers
-  const identifiers = typeof beneficiary.unique_identifiers === 'string' 
-    ? JSON.parse(beneficiary.unique_identifiers)
-    : beneficiary.unique_identifiers;
 
   return (
-    <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-lg font-medium">{beneficiary.name}</h3>
-          <div className="text-sm text-gray-500 mt-1">
-            {beneficiary.estimated_age && (
-              <span className="mr-3">Age: {beneficiary.estimated_age}</span>
-            )}
-            {beneficiary.height && (
-              <span>Height: {beneficiary.height} cm</span>
-            )}
-          </div>
-          <div className="mt-2 text-sm">
-            <p className="font-medium">Unique Identifiers:</p>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {Array.isArray(identifiers) ? identifiers.map((id: string, index: number) => (
-                <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">
-                  {id}
-                </span>
-              )) : (
-                <span className="text-gray-500">No identifiers</span>
-              )}
+    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {beneficiary.name}
+              </h3>
+              <div className="mt-1 space-y-1">
+                <div className="flex items-center text-sm text-gray-500">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Age: {beneficiary.estimated_age}
+                </div>
+                {beneficiary.height && (
+                  <div className="flex items-center text-sm text-gray-500">
+                    <Ruler className="h-4 w-4 mr-2" />
+                    Height: {beneficiary.height} cm
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-gray-700">Identifiers</h4>
+            <div className="space-y-1">
+              {Object.entries(beneficiary.unique_identifiers).map(([key, value]) => (
+                value && (
+                  <div key={key} className="flex items-center text-sm text-gray-600">
+                    <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                    {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}: {value}
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+
+          {disburserName && (
+            <div className="pt-4 border-t">
+              <p className="text-sm text-gray-500">
+                Registered by: {disburserName}
+              </p>
+              <p className="text-sm text-gray-500">
+                {new Date(beneficiary.created_at).toLocaleDateString()}
+              </p>
+            </div>
+          )}
         </div>
-        <div className="text-right">
-          <p className="text-xs text-gray-500">
-            Registered: {new Date(beneficiary.created_at).toLocaleDateString()}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            By: {disburserName || "Loading..."}
-          </p>
-          <p className="text-xs flex items-center justify-end text-gray-500 mt-1">
-            <MapPin className="h-3 w-3 mr-1" /> ID: {beneficiary.id.substring(0, 8)}...
-          </p>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

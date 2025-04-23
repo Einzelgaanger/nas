@@ -151,7 +151,7 @@ export const ensureInitialSetup = async (): Promise<boolean> => {
       // Wait a bit before trying again
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
-    
+  
     console.error("Failed to complete setup after multiple attempts");
     return false;
   } catch (error) {
