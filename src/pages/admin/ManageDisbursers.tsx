@@ -77,6 +77,7 @@ const ManageDisbursers = () => {
   >(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [regions, setRegions] = useState<Region[]>([]);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -91,7 +92,7 @@ const ManageDisbursers = () => {
     queryFn: adminService.fetchDisbursers,
   });
 
-  const { data: regions, isLoading: isRegionsLoading } = useQuery({
+  const { data: regionsData, isLoading: isRegionsLoading } = useQuery({
     queryKey: ["regions"],
     queryFn: adminService.fetchRegions,
   });

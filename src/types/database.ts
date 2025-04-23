@@ -38,12 +38,15 @@ export interface Beneficiary {
   phone?: string;
   created_at: string;
   region_name?: string;
+  unique_identifiers?: string[];
+  registered_by?: string;
+  height?: number;
 }
 
 export interface GoodsType {
   id: string;
   name: string;
-  description?: string;
+  description: string | null;
   created_at: string;
 }
 
@@ -57,7 +60,7 @@ export interface RegionalGoods {
   goods_types?: {
     id: string;
     name: string;
-    description?: string;
+    description: string | null;
     created_at: string;
   };
 }

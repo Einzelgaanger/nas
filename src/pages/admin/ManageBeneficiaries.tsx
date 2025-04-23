@@ -283,6 +283,17 @@ const BeneficiaryCard = ({ beneficiary, getDisburserName }: {
     }
   }, [beneficiary.unique_identifiers]);
 
+  // Add type checking for height
+  const renderHeight = (beneficiary: Beneficiary) => {
+    if (typeof beneficiary.height === 'undefined') return null;
+    
+    return (
+      <div className="text-sm text-gray-500">
+        Height: {beneficiary.height}cm
+      </div>
+    );
+  };
+
   return (
     <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardContent className="p-6">
@@ -299,12 +310,7 @@ const BeneficiaryCard = ({ beneficiary, getDisburserName }: {
                     Age: {beneficiary.estimated_age}
                   </div>
                 )}
-                {beneficiary.height && (
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Ruler className="h-4 w-4 mr-2" />
-                    Height: {beneficiary.height} cm
-                  </div>
-                )}
+                {renderHeight(beneficiary)}
               </div>
             </div>
           </div>
