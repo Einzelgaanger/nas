@@ -37,12 +37,14 @@ interface Location {
   longitude: number;
 }
 
-// Add this interface to ensure we have the right type
+// Complete interface with all required properties
 interface BeneficiaryWithRegion {
   id: string;
   name: string;
   region_id: string;
-  // Add other fields you need to use
+  id_number?: string;
+  phone?: string;
+  unique_identifiers?: any;
 }
 
 const AllocateResources = () => {
@@ -62,7 +64,7 @@ const AllocateResources = () => {
   const [open, setOpen] = useState(false);
 
   const filteredBeneficiaries = useMemo(() => {
-    return beneficiaries.filter((beneficiary) =>
+    return beneficiaries.filter((beneficiary: Beneficiary) =>
       beneficiary.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       Object.values(beneficiary.unique_identifiers)
         .join(" ")
@@ -191,7 +193,7 @@ const AllocateResources = () => {
       
       // Update stock levels for each allocated item
       for (const goodsId of selectedGoods) {
-        const goodsItem = regionalGoods.find(g => g.id === goodsId);
+        const goodsItem = regionalGoods.find((g: any) => g.id === goodsId);
         if (goodsItem) {
           const newQuantity = Math.max(0, goodsItem.quantity - 1);
           await updateRegionalGoodsQuantity(goodsId, newQuantity);
@@ -224,13 +226,15 @@ const AllocateResources = () => {
 
   // Explicitly cast to the type with region_id
   const handleBeneficiarySelect = (value: string) => {
-    const selected = beneficiaries.find(b => b.id === value);
+    const selected = beneficiaries.find((b: Beneficiary) => b.id === value);
     if (selected) {
       setSelectedBeneficiary({
         id: selected.id,
         name: selected.name,
         region_id: selected.region_id,
-        // Add other fields you need here
+        id_number: selected.id_number,
+        phone: selected.phone,
+        unique_identifiers: selected.unique_identifiers
       });
     }
   };
@@ -301,7 +305,7 @@ const AllocateResources = () => {
                         <SelectValue placeholder="Choose a beneficiary" />
                       </SelectTrigger>
                       <SelectContent>
-                        {beneficiaries.map((beneficiary) => (
+                        {beneficiaries.map((beneficiary: Beneficiary) => (
                           <SelectItem key={beneficiary.id} value={beneficiary.id}>
                             {beneficiary.name}
                           </SelectItem>
@@ -324,16 +328,16 @@ const AllocateResources = () => {
                   <div className="space-y-2">
                     <Label>Select Resources</Label>
                     <div className="space-y-2">
-                      {regionalGoods.map((good) => (
+                      {regionalGoods.map((good: any) => (
                         <div key={good.id} className="flex items-center space-x-2">
                           <Checkbox
                             id={good.id}
                             checked={selectedGoods.includes(good.id)}
-                            onCheckedChange={(checked) => {
+                            onCheckedChange={(checked: boolean) => {
                               if (checked) {
                                 setSelectedGoods([...selectedGoods, good.id]);
                               } else {
-                                setSelectedGoods(selectedGoods.filter((id) => id !== good.id));
+                                setSelectedGoods(selectedGoods.filter((id: string) => id !== good.id));
                               }
                             }}
                           />
