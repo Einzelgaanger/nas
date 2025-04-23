@@ -1,9 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold tracking-tight;
+  }
   :root {
     /* New color scheme: black, white, blue, green (in order from dark to light) */
     --background: 0 0% 100%;
@@ -60,33 +71,100 @@
 }
 
 @layer components {
-  /* Clean Button Style */
-  .btn-clean {
-    @apply transition-all duration-200 ease-in-out 
-    transform hover:scale-105 active:scale-95;
+  .page-container {
+    @apply container mx-auto px-4 py-8 max-w-7xl;
   }
-  
-  /* Card Styles */
-  .clean-card {
-    @apply bg-white rounded-xl shadow-md overflow-hidden 
-    border border-gray-100 hover:shadow-lg transition-shadow duration-300;
+
+  .card {
+    @apply rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md;
   }
-  
+
+  .input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm 
+           ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium 
+           placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 
+           focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed 
+           disabled:opacity-50;
+  }
+
+  .button {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background 
+           transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary 
+           focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .button-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90;
+  }
+
+  .button-ghost {
+    @apply hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors 
+           hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .nav-link-active {
+    @apply bg-accent text-accent-foreground;
+  }
+
+  /* Responsive Design Utilities */
+  .mobile-only {
+    @apply block md:hidden;
+  }
+
+  .desktop-only {
+    @apply hidden md:block;
+  }
+
   /* Animation Classes */
-  .float {
-    animation: float 3s ease-in-out infinite;
-  }
-  
-  .pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  
   .fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
+    @apply animate-in fade-in duration-300;
   }
-  
+
   .slide-in {
-    animation: slideIn 0.5s ease-out forwards;
+    @apply animate-in slide-in-from-left duration-300;
+  }
+
+  .zoom-in {
+    @apply animate-in zoom-in-95 duration-300;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .page-container {
+    @apply px-4 py-4;
+  }
+
+  .card {
+    @apply p-4;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
   }
 }
 
@@ -131,22 +209,6 @@
   100% {
     transform: translateX(0);
     opacity: 1;
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .mobile-hidden {
-    display: none;
-  }
-  
-  .mobile-only {
-    display: block;
-  }
-  
-  /* Add bottom padding to main content on mobile to account for fixed navigation */
-  main {
-    padding-bottom: 80px;
   }
 }
 
