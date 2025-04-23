@@ -1,16 +1,15 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
-import { CheckCircle, AlertCircle, Package, MapPin } from "lucide-react";
+import { CheckCircle, AlertCircle, Package, MapPin, Search, User } from "lucide-react";
 import { 
   fetchBeneficiariesByRegion, 
   fetchRegionalGoods,
@@ -20,9 +19,22 @@ import {
   updateRegionalGoodsQuantity
 } from "@/services/disburserService";
 
+interface Beneficiary {
+  id: string;
+  name: string;
+  estimated_age: number;
+  unique_identifiers: {
+    national_id?: string;
+    passport?: string;
+    birth_certificate?: string;
+  };
+  region_id: string;
+}
+
 const AllocateResources = () => {
-  const [beneficiaries, setBeneficiaries] = useState<any[]>([]);
-  const [selectedBeneficiary, setSelectedBeneficiary] = useState<any | null>(null);
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
   const [regionalGoods, setRegionalGoods] = useState<any[]>([]);
   const [selectedGoods, setSelectedGoods] = useState<string[]>([]);
   const [location, setLocation] = useState<{ latitude: number | null; longitude: number | null } | null>(null);
@@ -231,31 +243,12 @@ const AllocateResources = () => {
                 <>
                   <div className="space-y-3">
                     <Label htmlFor="beneficiary" className="text-lg font-medium">Select Beneficiary</Label>
-                    <Select 
-                      onValueChange={(value) => {
-                        const beneficiary = beneficiaries.find((b) => b.id === value);
-                        setSelectedBeneficiary(beneficiary || null);
-                      }}
-                      value={selectedBeneficiary?.id || ""}
-                      disabled={isSubmitting || isSuccess}
-                    >
-                      <SelectTrigger className="w-full bg-white border-blue-200">
-                        <SelectValue placeholder="Select a beneficiary" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {beneficiaries.map((beneficiary) => (
-                          <SelectItem key={beneficiary.id} value={beneficiary.id} className="hover:bg-blue-50">
-                            {beneficiary.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    {beneficiaries.length === 0 && (
-                      <p className="text-sm text-amber-600 mt-1">
-                        No beneficiaries registered in your region. Please register beneficiaries first.
-                      </p>
-                    )}
+                    <Input
+                      type="text"
+                      placeholder="Search beneficiaries"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                   </div>
 
                   <div className="space-y-3">

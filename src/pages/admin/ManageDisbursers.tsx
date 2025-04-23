@@ -40,7 +40,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Edit, Trash2, Plus } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Plus, UserPlus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -52,6 +52,18 @@ import * as adminService from "@/services/adminService";
 import { Disburser, Region } from "@/types/database";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Database } from "@/integrations/supabase/types";
+import { REGIONS } from "@/constants/regions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Search } from "lucide-react";
 
 const ManageDisbursers = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -64,6 +76,7 @@ const ManageDisbursers = () => {
     Disburser | null
   >(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -173,6 +186,12 @@ const ManageDisbursers = () => {
     }
   };
 
+  const filteredDisbursers = disbursers?.filter(
+    (disburser) =>
+      disburser.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      disburser.phone_number.includes(searchQuery)
+  ) || [];
+
   if (isLoading || isRegionsLoading) {
     return <div>Loading disbursers and regions...</div>;
   }
@@ -182,94 +201,83 @@ const ManageDisbursers = () => {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Manage Disbursers</h1>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Disburser
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add New Disburser</DialogTitle>
-              <DialogDescription>
-                Create a new disburser account.
-              </DialogDescription>
-            </DialogHeader>
-            <CreateDisburserForm
-              regions={regions || []}
-              onCreate={createDisburserMutation}
-              onClose={() => setIsCreating(false)}
-            />
-          </DialogContent>
-        </Dialog>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8 flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Manage Disbursers</h1>
+        <Button
+          onClick={() => {
+            setCurrentDisburser(null);
+            setIsCreating(true);
+          }}
+          className="bg-blue-500 hover:bg-blue-600"
+        >
+          <UserPlus className="mr-2 h-5 w-5" />
+          Add Disburser
+        </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Disbursers List</CardTitle>
-          <CardDescription>
-            Manage and update disburser accounts.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Phone Number</TableHead>
-                  <TableHead>Region</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {disbursers?.map((disburser) => (
-                  <TableRow key={disburser.id}>
-                    <TableCell className="font-medium">{disburser.id}</TableCell>
-                    <TableCell>{disburser.name}</TableCell>
-                    <TableCell>{disburser.phone_number}</TableCell>
-                    <TableCell>{disburser.regions?.name}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setIsEditing(true);
-                              setCurrentDisburser(disburser);
-                            }}
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteConfirmation(disburser)}
-                            className="text-red-500 focus:text-red-500"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input
+              placeholder="Search disbursers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </CardContent>
       </Card>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {isLoading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4" />
+                <div className="h-4 bg-gray-200 rounded w-1/2" />
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          filteredDisbursers.map((disburser) => (
+            <Card key={disburser.id} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">{disburser.name}</h3>
+                    <p className="text-sm text-gray-500">{disburser.phone_number}</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Region: {REGIONS[parseInt(disburser.region_id) - 1]}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditing(true);
+                        setCurrentDisburser(disburser);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-600"
+                      onClick={() => handleDeleteConfirmation(disburser)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
       {/* Edit Disburser Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
@@ -295,32 +303,23 @@ const ManageDisbursers = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Delete Disburser</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this disburser? This action cannot
-              be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="secondary">
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleConfirmDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              disburser and remove their data from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
