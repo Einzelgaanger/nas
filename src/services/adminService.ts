@@ -64,32 +64,31 @@ export const updateDisburser = async (id: string, disburser: Partial<Database["p
 
 export const deleteDisburser = async (id: string): Promise<void> => {
   try {
-    // First, check if disburser has any beneficiaries
+    // First check if disburser has any beneficiaries
     const { data: beneficiaries, error: checkError } = await supabase
       .from('beneficiaries')
-      .select('id')
+      .select('id, name')
       .eq('registered_by', id);
 
     if (checkError) throw checkError;
 
     if (beneficiaries && beneficiaries.length > 0) {
-      throw new Error('Cannot delete disburser: They have registered beneficiaries. Please reassign the beneficiaries first.');
+      throw new Error(
+        `Cannot delete disburser: They have ${beneficiaries.length} registered beneficiaries. ` +
+        `Please reassign or remove the beneficiaries first.`
+      );
     }
 
     // If no beneficiaries, proceed with deletion
-    const { error } = await supabase
+    const { error: deleteError } = await supabase
       .from('disbursers')
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (deleteError) throw deleteError;
   } catch (error) {
     console.error('Error deleting disburser:', error);
-    throw new Error(
-      error instanceof Error 
-        ? error.message 
-        : 'Failed to delete disburser'
-    );
+    throw error;
   }
 };
 

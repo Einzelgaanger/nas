@@ -40,7 +40,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Edit, Trash2, Plus, UserPlus } from "lucide-react";
+import { MoreVertical, Edit, Trash2, Plus, UserPlus, Phone, MapPin } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -201,112 +201,118 @@ const ManageDisbursers = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-7xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Manage Disbursers</h1>
-        <p className="text-gray-500 mt-1">Add, edit, and manage disburser accounts</p>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-12">
-        {/* Left side - Search and Add */}
-        <div className="md:col-span-4 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <Input
-                  placeholder="Search disbursers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Dialog open={isCreating} onOpenChange={setIsCreating}>
-                <DialogTrigger asChild>
-                  <Button className="w-full" variant="default">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Disburser
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New Disburser</DialogTitle>
-                    <DialogDescription>
-                      Create a new disburser account
-                    </DialogDescription>
-                  </DialogHeader>
-                  <CreateDisburserForm
-                    regions={regions || []}
-                    onCreate={createDisburserMutation}
-                    onClose={() => setIsCreating(false)}
-                  />
-                </DialogContent>
-              </Dialog>
-            </CardContent>
-          </Card>
+    <div className="container mx-auto py-6 px-4 max-w-6xl">
+      <div className="flex flex-col gap-6">
+        {/* Header Section */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Manage Disbursers</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Total Disbursers: {disbursers?.length || 0}
+            </p>
+          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Disburser
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Disburser</DialogTitle>
+                <DialogDescription>
+                  Create a new disburser account
+                </DialogDescription>
+              </DialogHeader>
+              <CreateDisburserForm
+                regions={regions || []}
+                onCreate={createDisburserMutation}
+                onClose={() => setIsCreating(false)}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Right side - Disbursers List */}
-        <div className="md:col-span-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Disbursers</CardTitle>
-              <CardDescription>
-                {filteredDisbursers.length} disbursers found
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {isLoading ? (
-                  <div className="flex justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-                  </div>
-                ) : filteredDisbursers.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    No disbursers found
-                  </div>
-                ) : (
-                  <div className="grid gap-4">
-                    {filteredDisbursers.map((disburser) => (
-                      <Card key={disburser.id} className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-medium">{disburser.name}</h3>
-                            <p className="text-sm text-gray-500">{disburser.phone_number}</p>
-                            <p className="text-sm text-gray-500">Region: {regions.find(r => r.id === disburser.region_id)?.name}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setCurrentDisburser(disburser);
-                                setIsEditing(true);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteConfirmation(disburser)}
-                              className="text-red-500 hover:text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+        {/* Search and Filter Section */}
+        <Card className="bg-white shadow-sm">
+          <CardContent className="p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder="Search disbursers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Disbursers List */}
+        <Card className="bg-white shadow-sm">
+          <CardHeader>
+            <CardTitle>Disbursers List</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {filteredDisbursers.map((disburser) => (
+                  <div key={disburser.id} className="py-4 flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span className="text-blue-600 font-medium">
+                              {disburser.name.charAt(0).toUpperCase()}
+                            </span>
                           </div>
                         </div>
-                      </Card>
-                    ))}
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-900">{disburser.name}</h3>
+                          <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
+                            <span className="flex items-center">
+                              <Phone className="h-4 w-4 mr-1" />
+                              {disburser.phone_number}
+                            </span>
+                            <span className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-1" />
+                              {regions.find(r => r.id === disburser.region_id)?.name || 'Unknown Region'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setCurrentDisburser(disburser);
+                          setIsEditing(true);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteConfirmation(disburser)}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Delete Confirmation Dialog */}
@@ -315,16 +321,18 @@ const ManageDisbursers = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Disburser</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. Before deleting this disburser, please ensure:
-              - All their beneficiary records have been reassigned
-              - All their allocation records have been archived
+              This action cannot be undone. Before deleting this disburser, ensure that:
+              <ul className="list-disc pl-4 mt-2 space-y-1">
+                <li>All their beneficiary records have been reassigned</li>
+                <li>All their allocation records have been archived</li>
+              </ul>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-red-500 hover:bg-red-600 text-white"
             >
               Delete
             </AlertDialogAction>
