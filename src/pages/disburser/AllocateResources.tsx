@@ -216,13 +216,15 @@ const AllocateResources = () => {
   const handleBeneficiarySelect = (value: string) => {
     const selected = beneficiaries.find(b => b.id === value);
     if (selected) {
-      setSelectedBeneficiary(selected);
+      setSelectedBeneficiary({
+        ...selected,
+      });
     }
   };
 
   useEffect(() => {
     const loadGoods = async () => {
-      if (selectedBeneficiary?.region_id) {
+      if (selectedBeneficiary && selectedBeneficiary.region_id) {
         try {
           const goods = await fetchRegionalGoods(selectedBeneficiary.region_id);
           setRegionalGoods(goods);
