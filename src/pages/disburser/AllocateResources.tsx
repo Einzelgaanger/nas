@@ -52,6 +52,11 @@ interface SelectedBeneficiary extends Beneficiary {
   region_id: string;
 }
 
+interface BeneficiarySelection {
+  id: string;
+  region_id: string;
+}
+
 const AllocateResources = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -229,8 +234,10 @@ const AllocateResources = () => {
   };
 
   const handleBeneficiarySelect = (value: string) => {
-    const selected = beneficiaries.find(b => b.id === value) as SelectedBeneficiary;
-    setSelectedBeneficiary(selected);
+    const selected = beneficiaries.find(b => b.id === value) as Beneficiary;
+    if (selected) {
+      setSelectedBeneficiary(selected);
+    }
   };
 
   const StatusCard = () => {

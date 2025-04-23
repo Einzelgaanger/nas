@@ -95,9 +95,7 @@ const ManageBeneficiaries = () => {
 
     const term = searchTerm.toLowerCase();
     const filtered = beneficiaries.filter(b => 
-      b.name.toLowerCase().includes(term) || 
-      b.id_number?.toLowerCase().includes(term) || 
-      b.phone?.toLowerCase().includes(term)
+      b.name.toLowerCase().includes(term)
     );
     setBeneficiaries(filtered);
   };
@@ -165,8 +163,8 @@ const ManageBeneficiaries = () => {
     );
   };
 
-  const renderContent = (content: ReactNode) => {
-    return <div className="text-sm text-gray-600">{content}</div>;
+  const renderContent = (content: string | null | undefined) => {
+    return content || '';
   };
 
   return (
@@ -202,7 +200,7 @@ const ManageBeneficiaries = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {beneficiary.name}
+                      {renderContent(beneficiary.name)}
                     </p>
                     <p className="text-sm text-gray-500 truncate">
                       {beneficiary.region_name || 'No region'}
