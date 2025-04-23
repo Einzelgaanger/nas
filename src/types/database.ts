@@ -47,7 +47,7 @@ export interface Beneficiary {
   created_at: string;
   updated_at: string;
   registered_by: string;
-  unique_identifiers: any;
+  unique_identifiers: BeneficiaryIdentifiers;
 }
 
 // Add this type for use in components that require non-null unique_identifiers

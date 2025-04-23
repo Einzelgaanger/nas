@@ -100,11 +100,9 @@ const ManageBeneficiaries = () => {
         b.region_name,
         b.id_number,
         b.phone
-      ];
+      ].filter((field): field is string => typeof field === 'string'); // Type guard to ensure we only get strings
       
-      return searchableFields.some(field => 
-        field?.toLowerCase().includes(term)
-      );
+      return searchableFields.some(field => field.toLowerCase().includes(term));
     });
     setBeneficiaries(filtered);
   };
@@ -173,7 +171,7 @@ const ManageBeneficiaries = () => {
   };
 
   const renderContent = (content: string | null | undefined): ReactNode => {
-    if (!content) return null;
+    if (!content) return <span>-</span>; // Return a dash for empty values
     return <span>{content}</span>;
   };
 

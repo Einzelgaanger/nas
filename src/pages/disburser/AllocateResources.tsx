@@ -37,11 +37,6 @@ interface Location {
   longitude: number;
 }
 
-interface BeneficiarySelection {
-  id: string;
-  region_id: string;
-}
-
 const AllocateResources = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
