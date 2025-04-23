@@ -16,7 +16,6 @@
     @apply font-heading font-semibold tracking-tight;
   }
   :root {
-    /* New color scheme: black, white, blue, green (in order from dark to light) */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -24,19 +23,19 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
     
-    --primary: 142 76% 36%; /* Green */
+    --primary: 215 90% 22%; /* Deep Navy Blue */
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 100% 45%; /* Blue */
+    --secondary: 215 25% 27%; /* Muted Blue */
     --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 142 76% 96%;
-    --accent-foreground: 142 76% 36%;
+    --accent: 215 90% 50%; /* Bright Blue */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%; /* Green */
+    --ring: 215 90% 22%;
     --radius: 0.5rem;
     
     /* Vibrant colors */
@@ -54,19 +53,38 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 142 76% 36%;
+    --primary: 215 90% 22%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 100% 45%;
+    --secondary: 215 25% 27%;
     --secondary-foreground: 0 0% 100%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 142 70% 20%;
+    --accent: 215 90% 50%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 142 76% 36%;
+    --ring: 215 90% 22%;
+  }
+}
+
+@layer utilities {
+  /* Animation utility classes */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.5s ease-out forwards;
   }
 }
 
@@ -123,17 +141,26 @@
     @apply hidden md:block;
   }
 
-  /* Animation Classes */
-  .fade-in {
-    @apply animate-in fade-in duration-300;
+  /* Button styles */
+  .btn-clean {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium 
+           transition-colors focus-visible:outline-none focus-visible:ring-2 
+           focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 
+           disabled:pointer-events-none ring-offset-background;
   }
-
-  .slide-in {
-    @apply animate-in slide-in-from-left duration-300;
+  
+  /* Card styles */
+  .card-clean {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
   }
-
-  .zoom-in {
-    @apply animate-in zoom-in-95 duration-300;
+  
+  /* Form styles */
+  .form-input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 
+           text-sm ring-offset-background file:border-0 file:bg-transparent 
+           file:text-sm file:font-medium placeholder:text-muted-foreground 
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring 
+           focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
 }
 
@@ -159,6 +186,19 @@
   .card {
     @apply p-4;
   }
+
+  .mobile-hidden {
+    display: none;
+  }
+  
+  .mobile-only {
+    display: block;
+  }
+  
+  /* Add bottom padding to main content on mobile to account for fixed navigation */
+  main {
+    padding-bottom: 80px;
+  }
 }
 
 /* Print Styles */
@@ -170,43 +210,32 @@
 
 /* Animation keyframes */
 @keyframes float {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 @keyframes fadeIn {
-  0% {
+  from {
     opacity: 0;
     transform: translateY(10px);
   }
-  100% {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
 @keyframes slideIn {
-  0% {
+  from {
     transform: translateX(-20px);
     opacity: 0;
   }
-  100% {
+  to {
     transform: translateX(0);
     opacity: 1;
   }
@@ -221,6 +250,7 @@
   width: 100%;
   margin: 0 auto;
   text-align: center;
+  @apply min-h-screen;
 }
 
 body {
