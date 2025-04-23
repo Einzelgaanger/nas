@@ -48,6 +48,10 @@ interface Location {
   longitude: number;
 }
 
+interface SelectedBeneficiary extends Beneficiary {
+  region_id: string;
+}
+
 const AllocateResources = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -224,6 +228,11 @@ const AllocateResources = () => {
     }
   };
 
+  const handleBeneficiarySelect = (value: string) => {
+    const selected = beneficiaries.find(b => b.id === value) as SelectedBeneficiary;
+    setSelectedBeneficiary(selected);
+  };
+
   const StatusCard = () => {
     if (isSuccess) {
       return (
@@ -268,10 +277,7 @@ const AllocateResources = () => {
                     <Label>Select Beneficiary</Label>
                     <Select
                       value={selectedBeneficiary?.id || ""}
-                      onValueChange={(value) => {
-                        const beneficiary = beneficiaries.find((b) => b.id === value);
-                        setSelectedBeneficiary(beneficiary || null);
-                      }}
+                      onValueChange={handleBeneficiarySelect}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Choose a beneficiary" />
