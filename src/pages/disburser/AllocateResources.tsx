@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useState, useEffect, useMemo } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth } from '@/lib/auth';
-import type { Beneficiary } from '@/types/database';
+import { cn } from "@/lib/utils";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import { AnimatedIcons } from "@/components/ui/animated-icons";
+import { CheckCircle, AlertCircle, Package, MapPin, Search, User } from "lucide-react";
 import { 
   fetchBeneficiaries, 
   fetchRegionalGoods,
@@ -14,7 +18,19 @@ import {
   createFraudAlert,
   updateRegionalGoodsQuantity
 } from "@/services/disburserService";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuth } from '@/lib/auth';
+import type { Beneficiary } from '@/types/database';
+
+interface LocalBeneficiary extends Beneficiary {
+  unique_identifiers: {
+    national_id?: string;
+    passport?: string;
+    birth_certificate?: string;
+  };
+}
 
 interface Location {
   latitude: number;
@@ -29,6 +45,7 @@ interface DisburserUser {
 
 const AllocateResources = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
   const [regionalGoods, setRegionalGoods] = useState<any[]>([]);
   const [selectedGoods, setSelectedGoods] = useState<string[]>([]);
@@ -39,6 +56,17 @@ const AllocateResources = () => {
   const [isFraudDetected, setIsFraudDetected] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  const filteredBeneficiaries = useMemo(() => {
+    return beneficiaries.filter((beneficiary) =>
+      beneficiary.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      Object.values(beneficiary.unique_identifiers)
+        .join(" ")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    );
+  }, [beneficiaries, searchQuery]);
 
   const fetchData = async () => {
     try {
@@ -162,7 +190,7 @@ const AllocateResources = () => {
       
       // Update stock levels for each allocated item
       for (const goodsId of selectedGoods) {
-        const goodsItem = regionalGoods.find((g: any) => g.id === goodsId);
+        const goodsItem = regionalGoods.find(g => g.id === goodsId);
         if (goodsItem) {
           const newQuantity = Math.max(0, goodsItem.quantity - 1);
           await updateRegionalGoodsQuantity(goodsId, newQuantity);
@@ -194,7 +222,7 @@ const AllocateResources = () => {
   };
 
   const handleBeneficiarySelect = (value: string) => {
-    const selected = beneficiaries.find((b: Beneficiary) => b.id === value);
+    const selected = beneficiaries.find(b => b.id === value);
     if (selected) {
       setSelectedBeneficiary(selected);
     }
@@ -215,6 +243,38 @@ const AllocateResources = () => {
     loadGoods();
   }, [selectedBeneficiary]);
 
+  const StatusCard = () => {
+    if (isSuccess) {
+      return (
+        <Card className="border-green-300 bg-green-50 mb-6">
+          <CardContent className="p-6 flex items-center">
+            <CheckCircle className="h-8 w-8 text-green-600 mr-4" />
+            <div>
+              <h3 className="font-semibold text-green-800">Allocation Successful</h3>
+              <p className="text-sm text-green-700">Resources successfully allocated to {selectedBeneficiary?.name}</p>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    if (isFraudDetected) {
+      return (
+        <Card className="border-red-300 bg-red-50 mb-6">
+          <CardContent className="p-6 flex items-center">
+            <AlertCircle className="h-8 w-8 text-red-600 mr-4" />
+            <div>
+              <h3 className="font-semibold text-red-800">Fraud Alert</h3>
+              <p className="text-sm text-red-700">This beneficiary has already received an allocation recently.</p>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    return null;
+  };
+
   return (
     <div className="container mx-auto py-6">
       <div className="grid gap-6 md:grid-cols-[300px_1fr]">
@@ -233,7 +293,7 @@ const AllocateResources = () => {
                         <SelectValue placeholder="Choose a beneficiary" />
                       </SelectTrigger>
                       <SelectContent>
-                        {beneficiaries.map((beneficiary: Beneficiary) => (
+                        {beneficiaries.map((beneficiary) => (
                           <SelectItem key={beneficiary.id} value={beneficiary.id}>
                             {beneficiary.name}
                           </SelectItem>
@@ -256,16 +316,16 @@ const AllocateResources = () => {
                   <div className="space-y-2">
                     <Label>Select Resources</Label>
                     <div className="space-y-2">
-                      {regionalGoods.map((good: any) => (
+                      {regionalGoods.map((good) => (
                         <div key={good.id} className="flex items-center space-x-2">
                           <Checkbox
                             id={good.id}
                             checked={selectedGoods.includes(good.id)}
-                            onCheckedChange={(checked: boolean) => {
+                            onCheckedChange={(checked) => {
                               if (checked) {
                                 setSelectedGoods([...selectedGoods, good.id]);
                               } else {
-                                setSelectedGoods(selectedGoods.filter((id: string) => id !== good.id));
+                                setSelectedGoods(selectedGoods.filter((id) => id !== good.id));
                               }
                             }}
                           />
