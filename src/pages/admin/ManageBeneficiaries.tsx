@@ -10,24 +10,7 @@ import { fetchRegions } from "@/services/adminService";
 import { supabase } from "@/integrations/supabase/client";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 import { Label } from "@/components/ui/label";
-
-interface Beneficiary {
-  id: string;
-  name: string;
-  estimated_age: number;
-  height: number;
-  unique_identifiers: {
-    national_id?: string;
-    passport?: string;
-    birth_certificate?: string;
-  };
-  region_id: string;
-  registered_by: string;
-  created_at: string;
-  region_name?: string;
-  id_number?: string;
-  phone?: string;
-}
+import type { Beneficiary } from '@/types/database';
 
 const ManageBeneficiaries = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);

@@ -75,27 +75,18 @@ const ManageAllocations = () => {
     return matchesSearch;
   });
 
-  const formatGoodsList = (goods: any[]) => {
+  const formatGoodsList = (goods: any) => {
     try {
       const parsedGoods = typeof goods === 'string' ? JSON.parse(goods) : goods;
-      if (!Array.isArray(parsedGoods)) return 'No items';
+      if (!Array.isArray(parsedGoods)) return [];
       
-      return (
-        <div className="flex flex-wrap gap-1">
-          {parsedGoods.map((item, index) => (
-            <span 
-              key={index}
-              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
-            >
-              <Package className="h-3 w-3 mr-1" />
-              {item.name || item}
-            </span>
-          ))}
-        </div>
-      );
+      return parsedGoods.map((item: any) => ({
+        name: item.name || 'Unknown Item',
+        id: item.id || item
+      }));
     } catch (error) {
       console.error('Error parsing goods:', error);
-      return 'Invalid goods data';
+      return [];
     }
   };
 
@@ -207,7 +198,17 @@ const ManageAllocations = () => {
                     {allocation.disbursers?.name || "Unknown"}
                   </TableCell>
                   <TableCell className="py-2">
-                    {formatGoodsList(allocation.goods)}
+                    <div className="flex flex-wrap gap-1">
+                      {formatGoodsList(allocation.goods).map((item, index) => (
+                        <span 
+                          key={index}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
+                        >
+                          <Package className="h-3 w-3 mr-1" />
+                          {item.name}
+                        </span>
+                      ))}
+                    </div>
                   </TableCell>
                   <TableCell className="py-2 whitespace-nowrap text-gray-600">
                     {formatDate(allocation.allocated_at)}

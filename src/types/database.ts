@@ -1,4 +1,3 @@
-
 import { Database as SupabaseDatabase } from "@/integrations/supabase/types";
 import { Json } from "@/integrations/supabase/types";
 
@@ -33,13 +32,12 @@ export interface Disburser {
 export interface Beneficiary {
   id: string;
   name: string;
-  height?: number;
-  estimated_age?: number;
-  unique_identifiers: Json;
-  registered_by: string;
   region_id: string;
+  estimated_age: number;
+  id_number?: string;
+  phone?: string;
   created_at: string;
-  updated_at: string;
+  region_name?: string;
 }
 
 export interface GoodsType {
