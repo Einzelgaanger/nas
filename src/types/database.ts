@@ -39,7 +39,9 @@ export interface Beneficiary {
   id: string;
   name: string;
   region_id: string;
+  region_name?: string;
   estimated_age: number | null;
+  height?: number | null;
   id_number?: string;
   phone?: string;
   created_at: string;

@@ -95,7 +95,10 @@ const ManageBeneficiaries = () => {
 
     const term = searchTerm.toLowerCase();
     const filtered = beneficiaries.filter(b => 
-      b.name.toLowerCase().includes(term)
+      b.name.toLowerCase().includes(term) || 
+      b.region_name?.toLowerCase().includes(term) || 
+      b.id_number?.toLowerCase().includes(term) || 
+      b.phone?.toLowerCase().includes(term)
     );
     setBeneficiaries(filtered);
   };
@@ -163,8 +166,8 @@ const ManageBeneficiaries = () => {
     );
   };
 
-  const renderContent = (content: string | null | undefined) => {
-    return content || '';
+  const renderContent = (content: ReactNode): ReactNode => {
+    return content || null;
   };
 
   return (

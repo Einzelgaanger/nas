@@ -22,18 +22,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from '@/lib/auth';
-
-interface Beneficiary {
-  id: string;
-  name: string;
-  estimated_age: number;
-  unique_identifiers: {
-    national_id?: string;
-    passport?: string;
-    birth_certificate?: string;
-  };
-  region_id: string;
-}
+import type { Beneficiary } from '@/types/database';
 
 interface LocalBeneficiary extends Beneficiary {
   unique_identifiers: {
@@ -48,7 +37,8 @@ interface Location {
   longitude: number;
 }
 
-interface SelectedBeneficiary extends Beneficiary {
+interface SelectedBeneficiaryType extends Beneficiary {
+  id: string;
   region_id: string;
 }
 
@@ -234,7 +224,7 @@ const AllocateResources = () => {
   };
 
   const handleBeneficiarySelect = (value: string) => {
-    const selected = beneficiaries.find(b => b.id === value) as Beneficiary;
+    const selected = beneficiaries.find(b => b.id === value);
     if (selected) {
       setSelectedBeneficiary(selected);
     }

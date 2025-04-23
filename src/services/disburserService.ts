@@ -237,12 +237,18 @@ export const updateRegionalGoodsQuantity = async (goodsId: string, quantity: num
 export const fetchBeneficiaries = async (): Promise<Beneficiary[]> => {
   const { data, error } = await supabase
     .from('beneficiaries')
-    .select('*');
+    .select(`
+      *,
+      regions (name)
+    `);
 
   if (error) {
     console.error('Error fetching beneficiaries:', error);
     throw new Error(error.message);
   }
 
-  return data || [];
+  return (data || []).map(b => ({
+    ...b,
+    region_name: b.regions?.name
+  }));
 };
