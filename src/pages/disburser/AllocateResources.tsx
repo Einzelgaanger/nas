@@ -37,10 +37,19 @@ interface Location {
   longitude: number;
 }
 
+// Add this interface to ensure we have the right type
+interface BeneficiaryWithRegion {
+  id: string;
+  name: string;
+  region_id: string;
+  // Add other fields you need to use
+}
+
 const AllocateResources = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
+  // Use the new interface to ensure region_id is available
+  const [selectedBeneficiary, setSelectedBeneficiary] = useState<BeneficiaryWithRegion | null>(null);
   const [regionalGoods, setRegionalGoods] = useState<any[]>([]);
   const [selectedGoods, setSelectedGoods] = useState<string[]>([]);
   const [location, setLocation] = useState<Location | null>(null);
@@ -213,15 +222,20 @@ const AllocateResources = () => {
     }
   };
 
+  // Explicitly cast to the type with region_id
   const handleBeneficiarySelect = (value: string) => {
     const selected = beneficiaries.find(b => b.id === value);
     if (selected) {
       setSelectedBeneficiary({
-        ...selected,
+        id: selected.id,
+        name: selected.name,
+        region_id: selected.region_id,
+        // Add other fields you need here
       });
     }
   };
 
+  // Explicitly check for region_id
   useEffect(() => {
     const loadGoods = async () => {
       if (selectedBeneficiary && selectedBeneficiary.region_id) {
