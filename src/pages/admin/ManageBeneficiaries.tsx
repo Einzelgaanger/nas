@@ -9,6 +9,7 @@ import { fetchBeneficiariesByRegion } from "@/services/disburserService";
 import { fetchRegions } from "@/services/adminService";
 import { supabase } from "@/integrations/supabase/client";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
+import { Label } from "@/components/ui/label";
 
 interface Beneficiary {
   id: string;
@@ -161,122 +162,93 @@ const ManageBeneficiaries = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Beneficiaries</h1>
-            <p className="text-gray-500 mt-1">Manage and view registered beneficiaries</p>
-          </div>
-          <Button 
-            onClick={handleRefresh} 
-            disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
-        
-        <div className="grid gap-6 md:grid-cols-[300px_1fr]">
-          <div className="space-y-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle>Filters</CardTitle>
-                <CardDescription>Refine your search</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Region
-                  </label>
-                  <Select
-                    value={selectedRegion || ""}
-                    onValueChange={setSelectedRegion}
-                  >
-                    <SelectTrigger className="w-full border-gray-300">
-                      <SelectValue placeholder="Select region" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {regions.map(region => (
-                        <SelectItem key={region.id} value={region.id}>
-                          {region.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Search
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Search by name or ID..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 border-gray-300"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-0 shadow-lg bg-blue-50 border-blue-100">
-              <CardContent className="p-4">
-                <div className="text-sm text-blue-600">
-                  <p className="font-medium">Total Beneficiaries: {filteredBeneficiaries.length}</p>
-                  {selectedRegion && regions.find(r => r.id === selectedRegion) && (
-                    <p className="mt-1">
-                      Region: {regions.find(r => r.id === selectedRegion).name}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+    <div className="container mx-auto p-4 max-w-7xl">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Beneficiaries</h1>
+        <p className="text-gray-500 mt-1">View and manage registered beneficiaries</p>
+      </div>
 
-          <div className="space-y-6">
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="border-0 shadow-lg animate-pulse">
-                    <CardContent className="p-6">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-4" />
-                      <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
-                      <div className="h-4 bg-gray-200 rounded w-2/3" />
-                    </CardContent>
-                  </Card>
-                ))}
+      <div className="grid gap-6 md:grid-cols-12">
+        {/* Left side - Filters */}
+        <div className="md:col-span-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Filters</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Region</Label>
+                <Select value={selectedRegion || ""} onValueChange={setSelectedRegion}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select region" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {regions.map(region => (
+                      <SelectItem key={region.id} value={region.id}>
+                        {region.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            ) : filteredBeneficiaries.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredBeneficiaries.map((beneficiary) => (
-                  <BeneficiaryCard 
-                    key={beneficiary.id} 
-                    beneficiary={beneficiary}
-                    getDisburserName={getDisburserName}
-                  />
-                ))}
+
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search beneficiaries..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
               </div>
-            ) : (
-              <Card className="border-0 shadow-lg">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <User className="h-16 w-16 text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">
+
+              <Button
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={isLoading}
+                className="w-full"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+                Refresh
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right side - Beneficiaries List */}
+        <div className="md:col-span-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Beneficiary List</CardTitle>
+              <CardDescription>
+                {filteredBeneficiaries.length} beneficiaries found
+                {selectedRegion && regions.find(r => r.id === selectedRegion) && (
+                  <> in {regions.find(r => r.id === selectedRegion)?.name}</>
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                  </div>
+                ) : filteredBeneficiaries.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
                     No beneficiaries found
-                  </h3>
-                  <p className="text-gray-500 text-center max-w-sm">
-                    {selectedRegion 
-                      ? "No beneficiaries are registered in this region."
-                      : "Please select a region to view beneficiaries."}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                  </div>
+                ) : (
+                  filteredBeneficiaries.map((beneficiary) => (
+                    <BeneficiaryCard
+                      key={beneficiary.id}
+                      beneficiary={beneficiary}
+                      getDisburserName={getDisburserName}
+                    />
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

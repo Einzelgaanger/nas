@@ -201,103 +201,142 @@ const ManageDisbursers = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8 flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Manage Disbursers</h1>
-        <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Disburser
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add New Disburser</DialogTitle>
-              <DialogDescription>
-                Create a new disburser account.
-              </DialogDescription>
-            </DialogHeader>
-            <CreateDisburserForm
-              regions={regions || []}
-              onCreate={createDisburserMutation}
-              onClose={() => setIsCreating(false)}
-            />
-          </DialogContent>
-        </Dialog>
+    <div className="container mx-auto p-4 max-w-7xl">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Manage Disbursers</h1>
+        <p className="text-gray-500 mt-1">Add, edit, and manage disburser accounts</p>
       </div>
 
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input
-              placeholder="Search disbursers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 md:grid-cols-12">
+        {/* Left side - Search and Add */}
+        <div className="md:col-span-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search disbursers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Dialog open={isCreating} onOpenChange={setIsCreating}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" variant="default">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Disburser
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New Disburser</DialogTitle>
+                    <DialogDescription>
+                      Create a new disburser account
+                    </DialogDescription>
+                  </DialogHeader>
+                  <CreateDisburserForm
+                    regions={regions || []}
+                    onCreate={createDisburserMutation}
+                    onClose={() => setIsCreating(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+            </CardContent>
+          </Card>
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4" />
-                <div className="h-4 bg-gray-200 rounded w-1/2" />
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          filteredDisbursers.map((disburser) => (
-            <Card key={disburser.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">{disburser.name}</h3>
-                    <p className="text-sm text-gray-500">{disburser.phone_number}</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Region: {REGIONS[parseInt(disburser.region_id) - 1]}
-                    </p>
+        {/* Right side - Disbursers List */}
+        <div className="md:col-span-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Disbursers</CardTitle>
+              <CardDescription>
+                {filteredDisbursers.length} disbursers found
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
                   </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setIsEditing(true);
-                        setCurrentDisburser(disburser);
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-600"
-                      onClick={() => handleDeleteConfirmation(disburser)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                ) : filteredDisbursers.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No disbursers found
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+                ) : (
+                  <div className="grid gap-4">
+                    {filteredDisbursers.map((disburser) => (
+                      <Card key={disburser.id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-medium">{disburser.name}</h3>
+                            <p className="text-sm text-gray-500">{disburser.phone_number}</p>
+                            <p className="text-sm text-gray-500">Region: {regions.find(r => r.id === disburser.region_id)?.name}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setCurrentDisburser(disburser);
+                                setIsEditing(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteConfirmation(disburser)}
+                              className="text-red-500 hover:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Edit Disburser Dialog */}
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Disburser</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. Before deleting this disburser, please ensure:
+              - All their beneficiary records have been reassigned
+              - All their allocation records have been archived
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Disburser</DialogTitle>
-            <DialogDescription>
-              Make changes to the selected disburser's account.
-            </DialogDescription>
           </DialogHeader>
           {currentDisburser && (
             <EditDisburserForm
@@ -312,25 +351,6 @@ const ManageDisbursers = () => {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              disburser and remove their data from the system.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} className="bg-red-500 hover:bg-red-600">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Disburser, Region } from "@/types/database";
 import { Database } from "@/integrations/supabase/types";
@@ -64,14 +63,33 @@ export const updateDisburser = async (id: string, disburser: Partial<Database["p
 };
 
 export const deleteDisburser = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from("disbursers")
-    .delete()
-    .eq("id", id);
+  try {
+    // First, check if disburser has any beneficiaries
+    const { data: beneficiaries, error: checkError } = await supabase
+      .from('beneficiaries')
+      .select('id')
+      .eq('registered_by', id);
 
-  if (error) {
-    console.error("Error deleting disburser:", error);
-    throw new Error(error.message);
+    if (checkError) throw checkError;
+
+    if (beneficiaries && beneficiaries.length > 0) {
+      throw new Error('Cannot delete disburser: They have registered beneficiaries. Please reassign the beneficiaries first.');
+    }
+
+    // If no beneficiaries, proceed with deletion
+    const { error } = await supabase
+      .from('disbursers')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting disburser:', error);
+    throw new Error(
+      error instanceof Error 
+        ? error.message 
+        : 'Failed to delete disburser'
+    );
   }
 };
 
