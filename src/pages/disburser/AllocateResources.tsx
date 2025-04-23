@@ -53,7 +53,7 @@ interface BeneficiaryWithRegion {
   unique_identifiers?: any;
 }
 
-const AllocateResources = () => {
+const AllocateResources: React.FC = () => {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
@@ -253,7 +253,7 @@ const AllocateResources = () => {
     loadGoods();
   }, [selectedBeneficiary]);
 
-  const StatusCard = () => {
+  const StatusCard: React.FC = () => {
     if (isSuccess) {
       return (
         <Card className="border-green-300 bg-green-50 mb-6">
