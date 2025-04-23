@@ -234,62 +234,64 @@ const AllocateResources = () => {
   };
 
   return (
-    <div className="relative flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 px-4 py-6 min-h-screen">
-      <AnimatedIcons className="opacity-20" />
-      
-      <div className="w-full max-w-lg">
-        {(isSuccess || isFraudDetected) && <StatusCard />}
-        
-        <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="text-center bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-t-lg">
-            <CardTitle className="text-2xl font-bold">Allocate Resources</CardTitle>
-            <CardDescription className="text-white/90">Select a beneficiary and allocate resources</CardDescription>
-          </CardHeader>
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          {(isSuccess || isFraudDetected) && <StatusCard />}
           
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6 pt-6">
+          <Card className="bg-white/95 backdrop-blur-sm border-blue-200 shadow-lg">
+            <CardHeader className="text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
+              <CardTitle className="text-2xl font-bold">Allocate Resources</CardTitle>
+              <CardDescription className="text-white/90">Select a beneficiary and allocate resources</CardDescription>
+            </CardHeader>
+            
+            <CardContent className="p-6 space-y-8">
               {isLoading ? (
-                <div className="flex items-center justify-center p-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                </div>
+                <LoadingSpinner />
               ) : (
-                <>
-                  <div className="space-y-3">
-                    <Label htmlFor="beneficiary" className="text-lg font-medium">Select Beneficiary</Label>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  {/* Beneficiary Selection */}
+                  <div className="space-y-4">
+                    <Label className="text-lg font-semibold text-gray-700">Select Beneficiary</Label>
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           role="combobox"
                           aria-expanded={open}
-                          className="w-full justify-between"
+                          className="w-full justify-between border-blue-200 hover:bg-blue-50"
                         >
-                          {selectedBeneficiary ? selectedBeneficiary.name : "Select beneficiary..."}
-                          <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          {selectedBeneficiary ? (
+                            <div className="flex items-center">
+                              <User className="h-4 w-4 mr-2 text-blue-500" />
+                              <span>{selectedBeneficiary.name}</span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-500">Select beneficiary...</span>
+                          )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
+                      <PopoverContent className="w-full p-0" align="start">
                         <Command>
-                          <CommandInput
-                            placeholder="Search beneficiaries..."
-                            value={searchQuery}
-                            onValueChange={setSearchQuery}
-                          />
-                          <CommandEmpty>No beneficiary found.</CommandEmpty>
-                          <CommandGroup className="max-h-60 overflow-y-auto">
-                            {filteredBeneficiaries.map((beneficiary) => (
+                          <CommandInput placeholder="Search beneficiaries..." />
+                          <CommandEmpty>No beneficiaries found.</CommandEmpty>
+                          <CommandGroup className="max-h-64 overflow-auto">
+                            {beneficiaries.map((beneficiary) => (
                               <CommandItem
                                 key={beneficiary.id}
+                                value={beneficiary.id}
                                 onSelect={() => {
                                   setSelectedBeneficiary(beneficiary);
                                   setOpen(false);
                                 }}
+                                className="flex items-center p-2 hover:bg-blue-50"
                               >
-                                <div className="flex flex-col">
-                                  <span>{beneficiary.name}</span>
-                                  <span className="text-sm text-muted-foreground">
-                                    ID: {Object.values(beneficiary.unique_identifiers)[0]}
-                                  </span>
+                                <User className="h-4 w-4 mr-2 text-blue-500" />
+                                <div>
+                                  <p className="font-medium">{beneficiary.name}</p>
+                                  <p className="text-xs text-gray-500">
+                                    ID: {beneficiary.unique_identifiers.national_id || 'N/A'}
+                                  </p>
                                 </div>
                               </CommandItem>
                             ))}
@@ -299,118 +301,131 @@ const AllocateResources = () => {
                     </Popover>
                   </div>
 
-                  <div className="space-y-3">
+                  {/* Goods Selection */}
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label className="text-lg font-medium">Select Goods</Label>
-                      <span className="text-xs text-blue-600">
+                      <Label className="text-lg font-semibold text-gray-700">Select Goods</Label>
+                      <span className="text-sm text-blue-600 font-medium">
                         Selected: {selectedGoods.length} item(s)
                       </span>
                     </div>
                     
-                    <div className="grid gap-3 p-4 bg-blue-50 rounded-lg max-h-60 overflow-y-auto">
-                      {regionalGoods.length > 0 ? (
-                        regionalGoods.map((goods) => (
-                          <div key={goods.id} className="flex items-center justify-between bg-white p-3 rounded-md hover:bg-blue-50 transition-colors">
-                            <div className="flex items-center space-x-3">
-                              <Checkbox
-                                id={goods.id}
-                                checked={selectedGoods.includes(goods.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedGoods([...selectedGoods, goods.id]);
-                                  } else {
-                                    setSelectedGoods(selectedGoods.filter((id) => id !== goods.id));
-                                  }
-                                }}
-                                disabled={isSubmitting || isSuccess || goods.quantity <= 0}
-                              />
-                              <Label htmlFor={goods.id} className="cursor-pointer flex flex-col">
-                                <span>{goods.goods_types?.name}</span>
-                                <span className="text-xs text-gray-500">{goods.goods_types?.description}</span>
+                    <div className="grid gap-3 bg-blue-50/50 rounded-lg p-4">
+                      {regionalGoods.map((goods) => (
+                        <div
+                          key={goods.id}
+                          className={cn(
+                            "flex items-center justify-between bg-white p-4 rounded-lg border transition-all",
+                            "hover:border-blue-300 hover:shadow-sm",
+                            goods.quantity <= 0 && "opacity-50"
+                          )}
+                        >
+                          <div className="flex items-start space-x-3">
+                            <Checkbox
+                              id={goods.id}
+                              checked={selectedGoods.includes(goods.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedGoods([...selectedGoods, goods.id]);
+                                } else {
+                                  setSelectedGoods(selectedGoods.filter((id) => id !== goods.id));
+                                }
+                              }}
+                              disabled={isSubmitting || isSuccess || goods.quantity <= 0}
+                            />
+                            <div>
+                              <Label
+                                htmlFor={goods.id}
+                                className="text-base font-medium cursor-pointer"
+                              >
+                                {goods.goods_types?.name}
                               </Label>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {goods.goods_types?.description}
+                              </p>
                             </div>
-                            <span className={cn(
-                              "text-sm font-medium",
-                              goods.quantity <= 0 ? "text-red-500" : "text-green-600"
-                            )}>
-                              {goods.quantity > 0 ? `Stock: ${goods.quantity}` : "Out of stock"}
-                            </span>
                           </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-4 text-gray-500">
-                          <Package className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                          <p>No goods available in your region.</p>
+                          
+                          <span className={cn(
+                            "text-sm font-medium px-3 py-1 rounded-full",
+                            goods.quantity <= 0 
+                              ? "bg-red-50 text-red-600" 
+                              : "bg-green-50 text-green-600"
+                          )}>
+                            {goods.quantity > 0 ? `Stock: ${goods.quantity}` : "Out of stock"}
+                          </span>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label htmlFor="location" className="text-lg font-medium">Location</Label>
+                  {/* Location */}
+                  <div className="space-y-4">
+                    <Label className="text-lg font-semibold text-gray-700">Location</Label>
                     {location ? (
-                      <div className="bg-gray-50 p-4 rounded-md border border-blue-200 flex items-start gap-3">
-                        <MapPin className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-sm font-medium">Current Location</p>
-                          <p className="text-xs text-gray-500">
-                            Latitude: {location.latitude?.toFixed(6)}, Longitude: {location.longitude?.toFixed(6)}
-                          </p>
+                      <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-200">
+                        <div className="flex items-start gap-3">
+                          <MapPin className="h-5 w-5 text-blue-500 mt-1" />
+                          <div>
+                            <p className="font-medium text-gray-700">Current Location</p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              Latitude: {location.latitude?.toFixed(6)}
+                              <br />
+                              Longitude: {location.longitude?.toFixed(6)}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center space-y-2 bg-gray-50 p-4 rounded-md border border-blue-200">
-                        <p className="text-sm text-gray-500">Location not available</p>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={getLocation}
-                          className="text-sm"
-                        >
-                          Get Location
-                        </Button>
-                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={getLocation}
+                        className="w-full border-blue-200 hover:bg-blue-50"
+                      >
+                        <MapPin className="h-4 w-4 mr-2" />
+                        Get Location
+                      </Button>
                     )}
                   </div>
-                </>
+
+                  <Button
+                    type="submit"
+                    className={cn(
+                      "w-full bg-gradient-to-r from-blue-600 to-purple-600",
+                      "hover:from-blue-700 hover:to-purple-700 transition-all",
+                      "text-white font-bold py-4 text-lg shadow-md hover:shadow-lg"
+                    )}
+                    disabled={
+                      isLoading ||
+                      isSubmitting ||
+                      !selectedBeneficiary ||
+                      selectedGoods.length === 0 ||
+                      isSuccess
+                    }
+                  >
+                    {isSubmitting ? (
+                      <LoadingSpinner />
+                    ) : isSuccess ? (
+                      "Allocation Complete ✓"
+                    ) : (
+                      "Allocate Resources"
+                    )}
+                  </Button>
+                </form>
               )}
             </CardContent>
-            
-            <CardFooter className="flex justify-end pt-2 pb-6">
-              <Button 
-                type="submit" 
-                className={cn(
-                  "w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all",
-                  "font-bold py-3 text-lg shadow-md hover:shadow-lg"
-                )} 
-                disabled={
-                  isLoading ||
-                  isSubmitting || 
-                  !selectedBeneficiary || 
-                  selectedGoods.length === 0 ||
-                  isSuccess
-                }
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Allocating...
-                  </span>
-                ) : isSuccess ? (
-                  "Allocation Complete ✓"
-                ) : (
-                  "Allocate Resources"
-                )}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+          </Card>
+        </div>
       </div>
     </div>
   );
 };
+
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center">
+    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+  </div>
+);
 
 export default AllocateResources;

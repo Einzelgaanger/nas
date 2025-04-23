@@ -118,10 +118,11 @@ const ManageAllocations = () => {
     try {
       let parsedGoods = Array.isArray(goods) ? goods : JSON.parse(goods);
       return parsedGoods.map((good: any) => {
-        if (typeof good === 'string') {
-          return good;
+        // Get the goods type name from the goods_types table
+        if (typeof good === 'object' && good.goods_type_id) {
+          return good.goods_types?.name || 'Unknown Item';
         }
-        return good.name || good.type || 'Unknown Item';
+        return good;
       });
     } catch (error) {
       console.error('Error parsing goods:', error);
@@ -151,7 +152,7 @@ const ManageAllocations = () => {
         </div>
       </div>
 
-      <Card className="shadow-md border-green-200">
+      <Card className="bg-white shadow-lg">
         <CardHeader className="bg-white border-b border-green-100">
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div className="flex items-center gap-2 text-gray-900">
@@ -204,18 +205,18 @@ const ManageAllocations = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-green-50">
-                    <TableHead>Beneficiary</TableHead>
-                    <TableHead>Disburser</TableHead>
-                    <TableHead>Resources</TableHead>
-                    <TableHead>
+                    <TableHead className="font-semibold">Beneficiary</TableHead>
+                    <TableHead className="font-semibold">Disburser</TableHead>
+                    <TableHead className="font-semibold">Resources</TableHead>
+                    <TableHead className="font-semibold">
                       <div className="flex items-center gap-1">
-                        <Calendar size={16} className="text-blue-600" />
+                        <Calendar size={16} className="text-green-600" />
                         <span>Date & Time</span>
                       </div>
                     </TableHead>
-                    <TableHead>
+                    <TableHead className="font-semibold">
                       <div className="flex items-center gap-1">
-                        <MapPin size={16} className="text-blue-600" />
+                        <MapPin size={16} className="text-green-600" />
                         <span>Location</span>
                       </div>
                     </TableHead>
@@ -223,24 +224,27 @@ const ManageAllocations = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredAllocations.map((allocation: Allocation) => (
-                    <TableRow key={allocation.id} className="hover:bg-green-50">
+                    <TableRow key={allocation.id} className="hover:bg-green-50/50">
                       <TableCell className="font-medium">
-                        {allocation.beneficiaries?.name || "Unknown Beneficiary"}
+                        {allocation.beneficiaries?.name || "Unknown"}
                       </TableCell>
                       <TableCell>
-                        {allocation.disbursers?.name || "Unknown Disburser"}
+                        {allocation.disbursers?.name || "Unknown"}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {formatGoodsDisplay(allocation.goods).map((good: string, index: number) => (
-                            <span key={index} className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs">
+                            <span 
+                              key={index} 
+                              className="inline-flex items-center bg-green-50 text-green-700 rounded-full px-2 py-1 text-xs"
+                            >
                               <Package className="h-3 w-3 mr-1" />
                               {good}
                             </span>
                           ))}
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-600">
+                      <TableCell className="text-gray-600 whitespace-nowrap">
                         {formatDate(allocation.allocated_at)}
                       </TableCell>
                       <TableCell className="text-sm text-gray-600">
@@ -265,7 +269,7 @@ const ManageAllocations = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="bg-white border-green-200 text-green-700"
+                  className="bg-white border-green-200 text-green-700 hover:bg-green-50"
                 >
                   Previous
                 </Button>
@@ -273,7 +277,7 @@ const ManageAllocations = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="bg-white border-green-200 text-green-700"
+                  className="bg-white border-green-200 text-green-700 hover:bg-green-50"
                 >
                   Next
                 </Button>
