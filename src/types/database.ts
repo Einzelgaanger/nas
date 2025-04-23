@@ -30,9 +30,10 @@ export interface Disburser {
 }
 
 export interface BeneficiaryIdentifiers {
-  national_id?: string;
-  passport?: string;
-  birth_certificate?: string;
+  national_id?: string | null;
+  passport?: string | null;
+  birth_certificate?: string | null;
+  [key: string]: string | null | undefined;  // Allow for additional identifiers
 }
 
 export interface Beneficiary {
@@ -48,6 +49,9 @@ export interface Beneficiary {
   updated_at: string;
   registered_by: string;
   unique_identifiers: BeneficiaryIdentifiers;
+  regions?: {
+    name: string;
+  };
 }
 
 // Add this type for use in components that require non-null unique_identifiers

@@ -221,8 +221,12 @@ const AllocateResources = () => {
   };
 
   useEffect(() => {
-    if (selectedBeneficiary) {
-      const regionGoods = fetchRegionalGoods(selectedBeneficiary.region_id);
+    if (selectedBeneficiary?.region_id) {
+      const fetchGoods = async () => {
+        const goods = await fetchRegionalGoods(selectedBeneficiary.region_id);
+        setRegionalGoods(goods);
+      };
+      fetchGoods();
     }
   }, [selectedBeneficiary]);
 
