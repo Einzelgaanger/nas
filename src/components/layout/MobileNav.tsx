@@ -1,54 +1,47 @@
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { 
-  BarChart3, Users, UserCheck, Package, AlertTriangle, 
-  LogOut, UserPlus 
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
+import { BarChart3, Users, UserCheck, AlertTriangle, UserPlus, Package } from "lucide-react";
 
-export function MobileNav() {
-  const { role } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+export type UserRole = "admin" | "disburser";
 
-  const adminLinks = [
-    { title: "Dashboard", url: "/admin/dashboard", icon: BarChart3 },
-    { title: "Disbursers", url: "/admin/disbursers", icon: Users },
-    { title: "Beneficiaries", url: "/admin/beneficiaries", icon: UserCheck },
-    { title: "Allocations", url: "/admin/allocations", icon: Package },
-    { title: "Alerts", url: "/admin/alerts", icon: AlertTriangle },
-  ];
+interface MobileNavProps {
+  role: UserRole;
+}
 
-  const disburserLinks = [
-    { title: "Register", url: "/disburser/register", icon: UserPlus },
-    { title: "Allocate", url: "/disburser/allocate", icon: Package },
-  ];
-
-  const links = role === "admin" ? adminLinks : disburserLinks;
-
-  const handleNavClick = (url: string): void => {
-    navigate(url);
-  };
-
+export function MobileNav({ role }: MobileNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-slate-200 shadow-md lg:hidden">
-      <div className="grid h-full grid-cols-5 mx-auto">
-        {links.map((link, index) => (
-          <button
-            key={link.title}
-            className={cn(
-              "inline-flex flex-col items-center justify-center px-1",
-              "hover:bg-slate-50 transition-colors",
-              location.pathname === link.url ? "text-emerald-600" : "text-slate-600"
-            )}
-            onClick={() => handleNavClick(link.url)}
-          >
-            <link.icon className="w-5 h-5 mb-1" />
-            <span className="text-xs truncate">{link.title}</span>
-          </button>
-        ))}
-      </div>
-    </nav>
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 z-50 shadow-lg">
+      {role === "admin" ? (
+        <>
+          <Link to="/dashboard" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
+            <BarChart3 size={20} />
+            <span>Dashboard</span>
+          </Link>
+          <Link to="/admin/disbursers" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
+            <Users size={20} />
+            <span>Disbursers</span>
+          </Link>
+          <Link to="/admin/beneficiaries" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
+            <UserCheck size={20} />
+            <span>Beneficiaries</span>
+          </Link>
+          <Link to="/admin/alerts" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
+            <AlertTriangle size={20} />
+            <span>Alerts</span>
+          </Link>
+        </>
+      ) : (
+        <>
+          <Link to="/disburser/register" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
+            <UserPlus size={20} />
+            <span>Register</span>
+          </Link>
+          <Link to="/disburser/allocate" className="flex flex-col items-center p-2 text-xs text-secure-DEFAULT hover:text-secure-accent transition-colors">
+            <Package size={20} />
+            <span>Allocate</span>
+          </Link>
+        </>
+      )}
+    </div>
   );
 }
