@@ -1,19 +1,29 @@
-import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { DisburserSidebar } from "@/components/layout/DisburserSidebar";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Shield, Menu, X, Bell, Settings, User } from "lucide-react";
+import { Shield, Menu, X, Bell, Settings } from "lucide-react";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AppLayout() {
   const { role } = useUserRole();
   const { user } = useUserInfo();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Get first letter of user's name for avatar
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
+
+  // Check authentication on mount
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);

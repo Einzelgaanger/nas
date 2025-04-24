@@ -31,7 +31,7 @@ const ProtectedRoute = () => {
   // Don't render until we've checked auth state
   if (!authChecked) {
     return <div className="flex h-screen items-center justify-center">
-      <div className="animate-spin h-8 w-8 border-4 border-secure-DEFAULT border-t-transparent rounded-full"></div>
+      <div className="animate-spin h-8 w-8 border-4 border-emerald-600 border-t-transparent rounded-full"></div>
     </div>;
   }
 
