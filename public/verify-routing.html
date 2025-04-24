@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Routing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #16a34a;
+        }
+        .link-group {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        a {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #16a34a;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        a:hover {
+            background-color: #15803d;
+        }
+        .info {
+            background-color: #f0f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0284c7;
+        }
+    </style>
+</head>
+<body>
+    <h1>SecureAid Navigation Test</h1>
+    
+    <div class="info">
+        <p>This page lets you test navigation links directly. If clicking the links works, the issue is likely with the sidebar implementation rather than the routes themselves.</p>
+    </div>
+    
+    <div class="link-group">
+        <h2>Basic Navigation</h2>
+        <ul>
+            <li><a href="/">Login Page</a></li>
+            <li><a href="/index">Index (redirects based on role)</a></li>
+        </ul>
+    </div>
+    
+    <div class="link-group">
+        <h2>Admin Navigation</h2>
+        <ul>
+            <li><a href="/admin/dashboard">Dashboard</a></li>
+            <li><a href="/admin/disbursers">Manage Disbursers</a></li>
+            <li><a href="/admin/beneficiaries">Beneficiaries</a></li>
+            <li><a href="/admin/allocations">Resource Allocation</a></li>
+            <li><a href="/admin/goods">Goods Management</a></li>
+            <li><a href="/admin/alerts">Fraud Alerts</a></li>
+        </ul>
+    </div>
+    
+    <div class="link-group">
+        <h2>Disburser Navigation</h2>
+        <ul>
+            <li><a href="/disburser/register">Register Beneficiary</a></li>
+            <li><a href="/disburser/allocate">Allocate Resources</a></li>
+        </ul>
+    </div>
+    
+    <script>
+        // Add click event logging
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                console.log('Clicked link to: ' + this.getAttribute('href'));
+            });
+        });
+    </script>
+</body>
+</html> 
