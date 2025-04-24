@@ -14,6 +14,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    // Check if all required auth data exists
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
     const hasRole = !!localStorage.getItem("userRole");
     const hasUserInfo = !!localStorage.getItem("userInfo");

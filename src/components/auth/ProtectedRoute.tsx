@@ -8,6 +8,15 @@ const ProtectedRoute = () => {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
+    // Clear any stale authentication data
+    const clearStaleAuth = () => {
+      if (!localStorage.getItem("isLoggedIn") || !localStorage.getItem("userRole") || !localStorage.getItem("userInfo")) {
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("userInfo");
+      }
+    };
+
     // Log authentication status when this component mounts or auth state changes
     console.log("ProtectedRoute mounted/updated, auth status:", { 
       isAuthenticated, 
@@ -20,10 +29,13 @@ const ProtectedRoute = () => {
       }
     });
     
+    // Clear stale auth data
+    clearStaleAuth();
+    
     // Mark auth as checked after a short delay to ensure all state is properly loaded
     const timer = setTimeout(() => {
       setAuthChecked(true);
-    }, 100); // Increased delay to ensure state is properly loaded
+    }, 100);
     
     return () => clearTimeout(timer);
   }, [isAuthenticated, role, location]);
