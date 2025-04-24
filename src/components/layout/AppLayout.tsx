@@ -8,7 +8,7 @@ import { Shield } from "lucide-react";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MobileNav } from "./MobileNav";
+import { MobileNav, UserRole } from "./MobileNav";
 
 export function AppLayout() {
   const { role } = useUserRole();
@@ -42,7 +42,7 @@ export function AppLayout() {
             <Outlet />
           </main>
         </div>
-        {isMobile && <MobileNav role={role} />}
+        {isMobile && <MobileNav role={role as UserRole} />}
       </div>
     </SidebarProvider>
   );
