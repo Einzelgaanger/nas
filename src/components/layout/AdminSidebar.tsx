@@ -51,12 +51,12 @@ export function AdminSidebar() {
     },
   ];
 
-  const handleLogout = (e) => {
+  const handleLogout = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
     logout();
   };
 
-  const handleNavClick = (url) => (e) => {
+  const handleNavClick = (url: string) => (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
     navigate(url);
   };

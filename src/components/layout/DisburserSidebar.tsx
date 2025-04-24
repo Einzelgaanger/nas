@@ -29,7 +29,7 @@ export function DisburserSidebar() {
     },
   ];
 
-  const handleLogout = (e) => {
+  const handleLogout = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
     logout();
   };

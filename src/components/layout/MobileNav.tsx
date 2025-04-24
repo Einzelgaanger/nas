@@ -27,7 +27,7 @@ export function MobileNav() {
 
   const links = role === "admin" ? adminLinks : disburserLinks;
 
-  const handleNavClick = (url) => {
+  const handleNavClick = (url: string): void => {
     navigate(url);
   };
 
