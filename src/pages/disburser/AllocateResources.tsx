@@ -12,7 +12,7 @@ import { useUserInfo } from "@/hooks/useUserInfo";
 import { AnimatedIcons } from "@/components/ui/animated-icons";
 import { CheckCircle, AlertCircle, Package, MapPin, Search, User } from "lucide-react";
 import { 
-  fetchBeneficiaries, 
+  fetchBeneficiariesByRegion, 
   fetchRegionalGoods,
   checkRecentAllocation,
   createAllocation,
@@ -22,7 +22,7 @@ import {
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useAuth } from '@/lib/auth';
+import { useAuth } from "@/hooks/useAuth";
 import type { Beneficiary } from '@/types/database';
 
 interface LocalBeneficiary extends Beneficiary {
@@ -56,7 +56,8 @@ const AllocateResources = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isFraudDetected, setIsFraudDetected] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useUserInfo();
+  const { isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
 
   const filteredBeneficiaries = useMemo(() => {
@@ -71,7 +72,7 @@ const AllocateResources = () => {
 
   const fetchData = async () => {
     try {
-      const data = await fetchBeneficiaries();
+      const data = await fetchBeneficiariesByRegion(user?.region_id || "");
       setBeneficiaries(data || []);
     } catch (error) {
       console.error('Error fetching beneficiaries:', error);
@@ -82,11 +83,10 @@ const AllocateResources = () => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        const disburserUser = user as DisburserUser;
-        if (disburserUser?.region_id) {
+        if (user?.region_id) {
           const [fetchedBeneficiaries, fetchedGoods] = await Promise.all([
             fetchData(),
-            fetchRegionalGoods(disburserUser.region_id)
+            fetchRegionalGoods(user.region_id)
           ]);
           
           setRegionalGoods(fetchedGoods);

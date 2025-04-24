@@ -8,35 +8,36 @@ export const isValidUUID = (uuid: string): boolean => {
   return uuidRegex.test(uuid);
 };
 
-export const registerBeneficiary = async (beneficiary: Omit<Beneficiary, 'id' | 'created_at' | 'updated_at'>): Promise<Beneficiary> => {
-  // Ensure region_id is a valid UUID
-  if (!beneficiary.region_id || !isValidUUID(beneficiary.region_id)) {
+export const registerBeneficiary = async (beneficiary: Omit<Database["public"]["Tables"]["beneficiaries"]["Insert"], "id" | "created_at" | "updated_at">): Promise<Beneficiary> => {
+  if (!isValidUUID(beneficiary.region_id)) {
     throw new Error(`Invalid region ID: ${beneficiary.region_id}`);
   }
 
-  // Ensure unique_identifiers is properly typed
+  if (!isValidUUID(beneficiary.registered_by)) {
+    throw new Error(`Invalid disburser ID: ${beneficiary.registered_by}`);
+  }
+
   const { data, error } = await supabase
-    .from('beneficiaries')
-    .insert([{
-      ...beneficiary,
-      unique_identifiers: beneficiary.unique_identifiers || {}
-    }])
-    .select()
+    .from("beneficiaries")
+    .insert(beneficiary)
+    .select(`
+      *,
+      regions (name)
+    `)
     .single();
 
   if (error) {
-    console.error('Error registering beneficiary:', error);
+    console.error("Error registering beneficiary:", error);
     throw new Error(error.message);
   }
 
   return {
     ...data,
-    unique_identifiers: data.unique_identifiers as BeneficiaryIdentifiers
-  };
+    region_name: data.regions?.name
+  } as Beneficiary;
 };
 
 export const fetchBeneficiariesByRegion = async (regionId: string): Promise<Beneficiary[]> => {
-  // Ensure regionId is a valid UUID
   if (!regionId || !isValidUUID(regionId)) {
     console.error("Invalid region ID:", regionId);
     return [];
@@ -44,7 +45,10 @@ export const fetchBeneficiariesByRegion = async (regionId: string): Promise<Bene
 
   const { data, error } = await supabase
     .from("beneficiaries")
-    .select("*")
+    .select(`
+      *,
+      regions (name)
+    `)
     .eq("region_id", regionId);
 
   if (error) {
@@ -52,7 +56,10 @@ export const fetchBeneficiariesByRegion = async (regionId: string): Promise<Bene
     throw new Error(error.message);
   }
 
-  return data as Beneficiary[];
+  return (data || []).map(b => ({
+    ...b,
+    region_name: b.regions?.name
+  })) as Beneficiary[];
 };
 
 export const fetchBeneficiaryById = async (id: string): Promise<Beneficiary> => {
